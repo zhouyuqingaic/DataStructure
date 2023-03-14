@@ -2,6 +2,11 @@
 // Created by zhouyuqing on 2023/3/9.
 //
 
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 #ifndef COMMON_DEFINE_H
 #define COMMON_DEFINE_H
 
@@ -45,3 +50,7 @@ Status show_LinkList(const LinkList *linkList,PRINT_DATA printData);
 Status destory_LinkList(LinkList **linkList);
 
 #endif //DATASTRUCTURE_LINKLIST_H
+
+#ifdef __cplusplus
+extern "C"{
+#endif
