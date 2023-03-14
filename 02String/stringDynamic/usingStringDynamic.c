@@ -139,7 +139,7 @@ void usingStringDynamic(){
         printf("销毁字符串%s成功\n","subStr");
 
 }
-
-void main(){
-    usingStringDynamic();
-}
+//
+//void main(){
+//    usingStringDynamic();
+//}
