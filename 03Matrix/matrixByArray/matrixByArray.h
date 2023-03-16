@@ -29,7 +29,7 @@ typedef void (*PRINT_DATA)(void *);
 
 typedef int ElemType;
 
-typedef struct _MATRIC_BY_ARRAY {
+typedef struct _MATRIX_BY_ARRAY {
     ElemType data[MATRIX_MAX_ARRAY][MATRIX_MAX_ARRAY]; //用来存储矩阵元素的二维数组
     int rows, cols; //矩阵的行数与列数
 } MatrixByArray;

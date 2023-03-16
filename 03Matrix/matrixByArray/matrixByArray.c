@@ -148,7 +148,7 @@ Status show_MatrixByArray(const MatrixByArray *matrix,PRINT_DATA printData){
     for(int i=0;i< matrix->rows;i++){
         printf("|");
         for(int j=0;j<matrix->cols;j++){
-            printData((int *)&(matrix->data[i][j]));
+            printData((void *)&(matrix->data[i][j]));
         }
         printf("|\n");
     }
