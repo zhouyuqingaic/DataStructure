@@ -186,16 +186,21 @@ Status create_SpareMatrixByCrossLink(SpareMatrixByCrossLink **pSpareMatrixByCros
     if(col<1 || col>MAX_SIZE_SPARE_MATRIX_CROSS_LINK)
         return FAIL;
 
+
     //将矩阵初始化为row行col列
     Status opResult= init_SpareMatrixByCrossLink(pSpareMatrixByCrossLink,row,col);
-    CrossLinkNode *rowCurrentCrossLinkNode=NULL;
+    if(FAIL==opResult)
+        return FAIL;
+    SpareMatrixByCrossLink *spareMatrixByCrossLink=*pSpareMatrixByCrossLink;
 
+    CrossLinkNode *rowCurrentCrossLinkNode=NULL;
     //列列表，记录当前列的最下面一个节点
     CrossLinkNode **current_col_list=(CrossLinkNode *)malloc(sizeof(CrossLinkNode *)*col);
+    if(current_col_list==NULL)
+        return FAIL;
     for(int i=0;i<col;i++)
-        current_col_list[i]=NULL;
+        current_col_list[i]=&(spareMatrixByCrossLink->colsHead[i]);
 
-    SpareMatrixByCrossLink *spareMatrixByCrossLink=*pSpareMatrixByCrossLink;
     CrossLinkNode *dataCrossLinkNode=NULL;
     //向稀疏矩阵填充数据
     for(int i=0;i<row;i++){
@@ -222,13 +227,8 @@ Status create_SpareMatrixByCrossLink(SpareMatrixByCrossLink **pSpareMatrixByCros
                 }
 
                 //将当前元素挂在当前列节点下
-                if(current_col_list[col]==NULL){ //当前元素为当前列的第一个元素
-                    spareMatrixByCrossLink->colsHead[col].down=dataCrossLinkNode;
-                    current_col_list[col]=dataCrossLinkNode;
-                }else{ //将data挂在当前列最下面元素后面
-                    current_col_list[col]->down=dataCrossLinkNode;
-                    current_col_list[col]=dataCrossLinkNode;
-                }
+                current_col_list[col]->down=dataCrossLinkNode;
+                current_col_list[col]=dataCrossLinkNode;
 
                 spareMatrixByCrossLink->amount++;
             }
@@ -308,17 +308,26 @@ Status set_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink
     }
 }
 //稀疏矩阵转置
-Status trans_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink,COPY_DATA copyData,SpareMatrixByCrossLink **pSpareMatrixByCrossLink){
+Status trans_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink,COPY_DATA copyData,SpareMatrixByCrossLink **pSpareMatrixByCrossLinkTrans){
     if(spareMatrixByCrossLink==NULL)
         return FAIL;
     //将 转置矩阵初始化为 spareMatrixByCrossLink->cols行,spareMatrixByCrossLink->rows列的矩阵
-    Status opResult=init_SpareMatrixByCrossLink(pSpareMatrixByCrossLink,spareMatrixByCrossLink->cols,spareMatrixByCrossLink->rows);
+    Status opResult=init_SpareMatrixByCrossLink(pSpareMatrixByCrossLinkTrans,spareMatrixByCrossLink->cols,spareMatrixByCrossLink->rows);
     if(FAIL==opResult)
         return FAIL;
-    //向转置矩阵填充元素
-    for(int i=0;i<spareMatrixByCrossLink->rows;i++){
-        for(int j=0;j<spareMatrixByCrossLink->cols;j++){
 
+    void *temp=NULL;
+    //向转置矩阵填充元素
+    for(int i=1;i<=spareMatrixByCrossLink->rows;i++){
+        for(int j=1;j<=spareMatrixByCrossLink->cols;j++){
+            //获取spareMatrixByCrossLink稀疏矩阵上 i行，j列的元素
+            opResult= pos_SpareMatrixByCrossLink(spareMatrixByCrossLink,i,j,&temp);
+            if(FAIL==opResult) //获取失败,i行j列没有元素,则继续探查下个位置的元素
+                continue;
+            //将i行，j列上的元素值设置到*pSpareMatrixByCrossLinkTrans上中的j行,i列上
+            opResult= set_SpareMatrixByCrossLink(*pSpareMatrixByCrossLinkTrans,j,i,temp);
+            if(FAIL==opResult)
+                return FAIL;
         }
     }
 }
