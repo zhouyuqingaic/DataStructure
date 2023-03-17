@@ -54,7 +54,7 @@ int isEmpty_SpareMatrix(SpareMatrix *spareMatrix);
 Status appand_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void *data);
 //获取稀疏矩阵row行，col列的节点数据(从1开始计数)
 Status pos_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void **resultData);
-//设置转置矩阵row行,col列的节点值
+//设置稀疏矩阵row行,col列的节点值
 Status set_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void *data);
 //稀疏矩阵转置
 Status trans_SpareMatrix(SpareMatrix *spareMatrix,COPY_DATA copyData,SpareMatrix **pSpareMatrixTrans);

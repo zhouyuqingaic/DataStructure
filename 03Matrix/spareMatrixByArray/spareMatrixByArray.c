@@ -124,7 +124,7 @@ Status pos_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void **resultDat
     //寻找row行，col列上的节点失败
     return FAIL;
 }
-//设置转置矩阵row行,col列的节点值
+//设置稀疏矩阵row行,col列的节点值
 Status set_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void *data){
     if(spareMatrix==NULL)
         return FAIL;

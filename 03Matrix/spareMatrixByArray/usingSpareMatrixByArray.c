@@ -178,8 +178,8 @@ void usingSpareMatrixByArray(){
 
 }
 
-void main(){
-    usingSpareMatrixByArray();
-}
+//void main(){
+//    usingSpareMatrixByArray();
+//}
 
 
