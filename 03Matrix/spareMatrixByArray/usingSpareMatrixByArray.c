@@ -14,13 +14,15 @@ Status copyItemSpareMatrixByArray(void *data,void **result){
     if(data==NULL)
         return FAIL;
 
-    //创建数据空间
-    int *resultData=(int *)malloc(sizeof(int));
-    if(resultData==NULL)
-        return FAIL;
-    *resultData=*( (int *)data );
-    //返回结果
-    *result=resultData;
+//    //创建数据空间
+//    int *resultData=(int *)malloc(sizeof(int));
+//    if(resultData==NULL)
+//        return FAIL;
+//    *resultData=*( (int *)data );
+//    //返回结果
+//    *result=resultData;
+
+    *result=data;
     return SUCCESS;
 }
 
@@ -181,5 +183,5 @@ void usingSpareMatrixByArray(){
 //void main(){
 //    usingSpareMatrixByArray();
 //}
-
+//
 

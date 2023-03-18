@@ -96,17 +96,19 @@ Status appand_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossL
     if(spareMatrixByCrossLink==NULL)
         return FAIL;
 
+
     //判断节点的行号与列号是否在合法范围内
     if(col<1 || col>spareMatrixByCrossLink->cols)
         return FAIL;
     if(row<1 || row>spareMatrixByCrossLink->rows)
         return FAIL;
 
+
     //判断row行，col列是否有数据，如果有就覆盖
     void *posVal=NULL;
     Status opResult= pos_SpareMatrixByCrossLink(spareMatrixByCrossLink,row,col,&posVal);
-    if(SUCCESS==opResult){ //在pos位置上有元素，则修改元素
-        return set_SpareMatrixByCrossLink(spareMatrixByCrossLink,row,col,data);
+    if(SUCCESS==opResult){ //在pos位置上有元素,则添加失败
+        return FAIL;
     }else{ //在pos位置上没有元素，则添加元素
 
         //创建data节点
@@ -122,14 +124,14 @@ Status appand_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossL
 
         //找到data节点在row行的前一个节点，并将data节点挂在其右边,
         // 在row行的前一个节点的右边节点挂在data节点的右边
-        CrossLinkNode *rowCurrentLinkNode=spareMatrixByCrossLink->rowsHead[row].right; //当前行的第一个节点
+        CrossLinkNode *rowCurrentLinkNode=spareMatrixByCrossLink->rowsHead[row-1].right; //当前行的第一个节点
         CrossLinkNode *preRowCurrentLinkNode=rowCurrentLinkNode;
         if(rowCurrentLinkNode==NULL){ //当前行为空，data元素为当前行元素的第一个节点
-            spareMatrixByCrossLink->rowsHead[row].right=dataCrossLinkNode;
+            spareMatrixByCrossLink->rowsHead[row-1].right=dataCrossLinkNode;
         }else{ //当前行不为空
             if(rowCurrentLinkNode->col > col){ //data在当前行第一个节点的左边,则data节点变为当前行的第一个节点
                 dataCrossLinkNode->right=rowCurrentLinkNode;
-                spareMatrixByCrossLink->rowsHead[row].right=dataCrossLinkNode;
+                spareMatrixByCrossLink->rowsHead[row-1].right=dataCrossLinkNode;
             }else{ //(不可能出现row行列为col列的元素,即rowCurrentLinkNode->col==col)目标节点应插入row行 第一个节点的右边 ,即col > spareMatrixByCrossLink->rowsHead[row].right->col
                 //找到第一个比dataCrossLinkNode->col大的元素，dataCrossLinkNode元素插入在它之左
                 //或者找不到比dataCrossLinkNode->col大的元素,就挂到本行最后一个元素之右
@@ -147,19 +149,19 @@ Status appand_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossL
 
         //找到data节点在col列的上一个节点，并将data节点挂在其下边,
         // 在col列的上一个节点的下一个节点挂在data节点的下边
-        CrossLinkNode *colCurrentLinkNode=spareMatrixByCrossLink->colsHead[col].down; //当前列的第一个节点
+        CrossLinkNode *colCurrentLinkNode=spareMatrixByCrossLink->colsHead[col-1].down; //当前列的第一个节点
         CrossLinkNode *preColCurrentLinkNode=colCurrentLinkNode;
         if(colCurrentLinkNode==NULL){ //当前列为空，data节点为当前列第一个节点
-            spareMatrixByCrossLink->colsHead[col].down=dataCrossLinkNode;
+            spareMatrixByCrossLink->colsHead[col-1].down=dataCrossLinkNode;
         }else{ //当前列不空
             if(colCurrentLinkNode->row > row){ //data在当前行的第一个节点的上边 ,则data节点变为当前的第一个节点
                 dataCrossLinkNode->down=colCurrentLinkNode;
-                spareMatrixByCrossLink->rowsHead[row].down=dataCrossLinkNode;
+                spareMatrixByCrossLink->rowsHead[col-1].down=dataCrossLinkNode;
             }else{ //(不可能出现col列为row行的元素,即rowCurrentLinkNode->row==row)目标节点应插入row行 第一个节点的下 ,即row > spareMatrixByCrossLink->rowsHead[col].down->row
                 //找到第一个比dataCrossLinkNode->row大的元素，dataCrossLinkNode元素插入在它之上
                 //或者找不到比dataCrossLinkNode->row大的元素,就挂到本列最后一个元素之下
                 while(colCurrentLinkNode!=NULL){
-                    if(rowCurrentLinkNode->row > row)
+                    if(colCurrentLinkNode->row > row)
                         break;
                     //preColCurrentLinkNode指向colCurrentLinkNode的上一个节点
                     preColCurrentLinkNode=colCurrentLinkNode;
@@ -176,22 +178,18 @@ Status appand_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossL
 }
 
 //通过传入二维数组构建十字链表
-Status create_SpareMatrixByCrossLink(SpareMatrixByCrossLink **pSpareMatrixByCrossLink,int row,int col,void *data[][MAX_SIZE_SPARE_MATRIX_CROSS_LINK]){
-    if(*pSpareMatrixByCrossLink==NULL)
+Status assign_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink,int row,int col,void *data[][MAX_SIZE_SPARE_MATRIX_CROSS_LINK]){
+    if(spareMatrixByCrossLink==NULL)
         return FAIL;
 
-    //判断节点的二维数组的行数与列数是否在合法范围内
-    if(row<1 || row>MAX_SIZE_SPARE_MATRIX_CROSS_LINK)
-        return FAIL;
-    if(col<1 || col>MAX_SIZE_SPARE_MATRIX_CROSS_LINK)
+    //判断节点的二维数组的行数与列是否合法
+    if(col!= spareMatrixByCrossLink->cols || row!= spareMatrixByCrossLink->rows)
         return FAIL;
 
-
-    //将矩阵初始化为row行col列
-    Status opResult= init_SpareMatrixByCrossLink(pSpareMatrixByCrossLink,row,col);
-    if(FAIL==opResult)
+    //清空原始矩阵
+    Status opResult= empty_SpareMatrixByCrossLink(spareMatrixByCrossLink);
+    if(opResult==FAIL)
         return FAIL;
-    SpareMatrixByCrossLink *spareMatrixByCrossLink=*pSpareMatrixByCrossLink;
 
     CrossLinkNode *rowCurrentCrossLinkNode=NULL;
     //列列表，记录当前列的最下面一个节点
@@ -211,14 +209,14 @@ Status create_SpareMatrixByCrossLink(SpareMatrixByCrossLink **pSpareMatrixByCros
                 //创建数据十字链表节点
                 dataCrossLinkNode=(CrossLinkNode *)malloc(sizeof(CrossLinkNode));
                 //设置节点参数
-                dataCrossLinkNode->data=data;
-                dataCrossLinkNode->col=col;
-                dataCrossLinkNode->row=row;
+                dataCrossLinkNode->data=data[i][j];
+                dataCrossLinkNode->col=j+1;
+                dataCrossLinkNode->row=i+1;
                 dataCrossLinkNode->down=NULL;
                 dataCrossLinkNode->right=NULL;
 
 
-                if(rowCurrentCrossLinkNode!=NULL){//当前元素为当前行的第一个元素
+                if(rowCurrentCrossLinkNode==NULL){//当前元素为当前行的第一个元素
                     spareMatrixByCrossLink->rowsHead[i].right=dataCrossLinkNode;
                     rowCurrentCrossLinkNode=dataCrossLinkNode;
                 }else{ //将data挂在当前行的最右边元素后面
@@ -226,9 +224,9 @@ Status create_SpareMatrixByCrossLink(SpareMatrixByCrossLink **pSpareMatrixByCros
                     rowCurrentCrossLinkNode=dataCrossLinkNode;
                 }
 
-                //将当前元素挂在当前列节点下
-                current_col_list[col]->down=dataCrossLinkNode;
-                current_col_list[col]=dataCrossLinkNode;
+                //将当前元素挂在当前j列节点下
+                current_col_list[j]->down=dataCrossLinkNode;
+                current_col_list[j]=dataCrossLinkNode;
 
                 spareMatrixByCrossLink->amount++;
             }
@@ -256,7 +254,7 @@ Status pos_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink
     //遍历所有十字链表节点
     CrossLinkNode *rowCurrentLinkNode;
     //遍历每行
-    for (int i = 0; i < spareMatrixByCrossLink->cols; i++) {
+    for (int i = 0; i < spareMatrixByCrossLink->rows; i++) {
         //探查当前行的所有十字链表节点
         rowCurrentLinkNode = spareMatrixByCrossLink->rowsHead[i].right; //获取当前行的头结点
         while(rowCurrentLinkNode!=NULL){
@@ -285,11 +283,10 @@ Status set_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink
     void *posVal=NULL;
     Status opResult= pos_SpareMatrixByCrossLink(spareMatrixByCrossLink,row,col,&posVal);
     if(SUCCESS==opResult){ //在pos位置上有元素，则修改元素
-
         //遍历所有十字链表节点
-        CrossLinkNode *rowCurrentLinkNode;
+        CrossLinkNode *rowCurrentLinkNode=NULL;
         //遍历每行
-        for (int i = 0; i < spareMatrixByCrossLink->cols; i++) {
+        for (int i = 0; i < spareMatrixByCrossLink->rows; i++) {
             //探查当前行的所有十字链表节点
             rowCurrentLinkNode = spareMatrixByCrossLink->rowsHead[i].right; //获取当前行的头结点
             while(rowCurrentLinkNode!=NULL){
@@ -330,6 +327,8 @@ Status trans_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLi
                 return FAIL;
         }
     }
+
+
 }
 
 //展示稀疏矩阵

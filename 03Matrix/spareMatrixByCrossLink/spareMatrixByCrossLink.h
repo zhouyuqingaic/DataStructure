@@ -21,7 +21,7 @@ typedef void (*PRINT_DATA)(void *);
 #ifndef DATASTRUCTURE_SPAREMATRIXBYCROSSLINK_H
 #define DATASTRUCTURE_SPAREMATRIXBYCROSSLINK_H
 
-#define MAX_SIZE_SPARE_MATRIX_CROSS_LINK 1000
+#define MAX_SIZE_SPARE_MATRIX_CROSS_LINK 100
 #define PRINT_SPAN 8
 
 #include<stdio.h>
@@ -54,7 +54,7 @@ int isEmpty_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLin
 Status appand_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink,int row,int col,void *data);
 
 //通过传入二维数组构建十字链表
-Status create_SpareMatrixByCrossLink(SpareMatrixByCrossLink **pSpareMatrixByCrossLink,int row,int col,void *data[][MAX_SIZE_SPARE_MATRIX]);
+Status assign_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink,int row,int col,void *data[][MAX_SIZE_SPARE_MATRIX_CROSS_LINK]);
 
 //获取稀疏矩阵row行，col列的节点数据(从1开始计数)
 Status pos_SpareMatrixByCrossLink(SpareMatrixByCrossLink *spareMatrixByCrossLink,int row,int col,void **resultData);

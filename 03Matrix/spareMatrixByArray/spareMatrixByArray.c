@@ -75,8 +75,6 @@ Status appand_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void *data){
     //如果节点row行,col列的节点已经存在，修改节点
     for(int i=0;i<spareMatrix->amount;i++){
         if(spareMatrix->nodes[i]->col==col && spareMatrix->nodes[i]->row==row){
-            //释放节点原数据
-            free( spareMatrix->nodes[i]->data );
             //修改节点数据
             spareMatrix->nodes[i]->data=data;
             return SUCCESS;
@@ -138,8 +136,6 @@ Status set_SpareMatrix(SpareMatrix *spareMatrix,int row,int col,void *data){
     //寻找row行，col列上的节点 并修改
     for(int i=0;i<spareMatrix->amount;i++){
         if(spareMatrix->nodes[i]->col==col && spareMatrix->nodes[i]->row==row){
-            //释放节点原数据
-            free( spareMatrix->nodes[i]->data );
             //修改节点数据
             spareMatrix->nodes[i]->data=data;
             return SUCCESS;
