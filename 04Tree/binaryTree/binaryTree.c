@@ -29,7 +29,7 @@ Status empty_BinaryTree(BinaryTree *binaryTree){
     //currentBTNode指向当前要遍历的节点
     BinaryTreeNode *currentBTNode=binaryTree->rootNode;
     void *temp=NULL;
-    while(currentBTNode!=NULL || isEmpty_StackLinkList(stackLinkList)){
+    while(currentBTNode!=NULL || !isEmpty_StackLinkList(stackLinkList)){
         if(currentBTNode){
             //访问节点，并将节点数据入访问序列
             btNodeList[indexBtNodeList++]=currentBTNode;
@@ -103,12 +103,15 @@ Status generate_BinaryTree(BinaryTree **pBinaryTree,void **dataList,int lengthDa
     currentBtNode->lChild=NULL;
     currentBtNode->rChild=NULL;
     (*pBinaryTree)->rootNode=currentBtNode;
+    (*pBinaryTree)->amountNodes++;
 
     //根节点入队
     opResult= enqueue_QueueByLinkList(queueByLinkList,(*pBinaryTree)->rootNode);
+    if(FAIL==opResult)
+        return FAIL;
 
     //判断dataList是否填充完毕
-    if(indexDataList>=lengthDataList-1) {
+    if(indexDataList>lengthDataList-1) {
         opResult= destroy_QueueByLinkList(&queueByLinkList);
         if(FAIL==opResult)
             return FAIL;
@@ -117,7 +120,7 @@ Status generate_BinaryTree(BinaryTree **pBinaryTree,void **dataList,int lengthDa
 
     //将dataList中的所有节点加入树中
     void *temp;
-    while(isEmpty_QueueByLinkList(queueByLinkList)){
+    while(!isEmpty_QueueByLinkList(queueByLinkList)){
         //栈顶元素出栈并访问
         opResult=dequeue_QueueByLinkList(queueByLinkList,&temp);
         if(FAIL==opResult)
@@ -125,11 +128,13 @@ Status generate_BinaryTree(BinaryTree **pBinaryTree,void **dataList,int lengthDa
         currentBtNode=(BinaryTreeNode *)temp;
 
         //判断是否需要继续填充
-        if(indexDataList<lengthDataList-1) {
+        if(indexDataList<=lengthDataList-1) {
             //填充出栈元素的左子树
             currentBtNode->lChild = (BinaryTreeNode *) malloc(sizeof(BinaryTreeNode));
             if (currentBtNode->lChild==NULL)
                 return FAIL;
+
+            (*pBinaryTree)->amountNodes++;
             currentBtNode->lChild->data=dataList[indexDataList++];
             currentBtNode->lChild->lChild=NULL;
             currentBtNode->lChild->rChild=NULL;
@@ -145,11 +150,13 @@ Status generate_BinaryTree(BinaryTree **pBinaryTree,void **dataList,int lengthDa
             return SUCCESS;
         }
 
-        if(indexDataList<lengthDataList-1) {
+        if(indexDataList<=lengthDataList-1) {
             //填充出栈元素的右子树
             currentBtNode->rChild = (BinaryTreeNode *) malloc(sizeof(BinaryTreeNode));
             if(currentBtNode->rChild==NULL)
                 return FAIL;
+
+            (*pBinaryTree)->amountNodes++;
             currentBtNode->rChild->data=dataList[indexDataList++];
             currentBtNode->rChild->lChild=NULL;
             currentBtNode->rChild->rChild=NULL;
@@ -203,11 +210,11 @@ Status preOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
     void *temp=NULL;
     //此处增加currentBTNode!=NULL判断是为了处理:
     //情况1:刚进入while时，栈空currentBtNode!=NULL
-    //情况2:当根节点出栈时,此时栈空，，currentBtNode指向根的右边节点有,由currentBtNode是否为空决定是否继续遍历
-    while(currentBTNode!=NULL || isEmpty_StackLinkList(stackLinkList)){
+    //情况2:当根节点出栈时,此时栈空，，currentBtNode指向根的右边节点,由currentBtNode是否为空决定是否继续遍历
+    while(currentBTNode!=NULL || !isEmpty_StackLinkList(stackLinkList)){
         if(currentBTNode){
             //访问节点，并将节点数据入访问序列
-            *pOrderList[indexOrderList++]=currentBTNode->data;
+            (*pOrderList)[indexOrderList++]=currentBTNode->data;
 
             push_StackLinkList(stackLinkList,currentBTNode);
             currentBTNode=currentBTNode->lChild;
@@ -253,17 +260,17 @@ Status inOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
     void *temp=NULL;
     //此处增加currentBTNode!=NULL判断是为了处理:
     //情况1:刚进入while时，栈空currentBtNode!=NULL
-    //情况2:当根节点出栈时,此时栈空，，currentBtNode指向根的右边节点有,由currentBtNode是否为空决定是否继续遍历
-    while(currentBTNode!=NULL || isEmpty_StackLinkList(stackLinkList)){
+    //情况2:当根节点出栈时,此时栈空，，currentBtNode指向根的右边节点,由currentBtNode是否为空决定是否继续遍历
+    while(currentBTNode!=NULL || !isEmpty_StackLinkList(stackLinkList)){
         if(currentBTNode){
             push_StackLinkList(stackLinkList,currentBTNode);
             currentBTNode=currentBTNode->lChild;
         }else{
-            //访问节点，将节点数据入访问序列
-            *pOrderList[indexOrderList++]=currentBTNode->data;
-
             pop_StackLinkList(stackLinkList,&temp);
             currentBTNode=(BinaryTreeNode *)temp;
+            //访问节点，将节点数据入访问序列
+            (*pOrderList)[indexOrderList++]=currentBTNode->data;
+
             currentBTNode=currentBTNode->rChild;
         }
     }
@@ -277,9 +284,71 @@ Status inOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
 }
 //二叉树非递归后序遍历,orderList返回遍历data序列
 Status postOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
-    //创建辅助栈
+    if(binaryTree==NULL)
+        return FAIL;
+    //如果树为空,则遍历失败
+    if(binaryTree->amountNodes==0)
+        return FAIL;
 
-    return FAIL;
+    //创建辅助栈
+    StackLinkList *stackLinkList=NULL;
+    Status opResult= init_StackLinkList(&stackLinkList);
+    if(FAIL==opResult)
+        return FAIL;
+
+    //创建访问列表
+    if(*pOrderList!=NULL)
+        free(*pOrderList);
+    *pOrderList=(void *)malloc(sizeof(void *)*binaryTree->amountNodes);
+    if(*pOrderList==NULL)
+        return FAIL;
+    int indexOrderList=0;
+
+    //currentBTNode指向当前要遍历的节点
+    BinaryTreeNode *currentBTNode=binaryTree->rootNode;
+    //preCurrentBTNode指向currentBTNode的前一个被访问的节点
+    BinaryTreeNode *preCurrentBTNode=NULL;
+
+    void *temp;
+    //此处增加currentBTNode!=NULL判断是为了处理:
+    //情况1:刚进入while时，栈空currentBtNode!=NULL
+    //情况2:当根节点出栈时,此时栈空，，currentBtNode指向根的右边节点,由currentBtNode是否为空决定是否继续遍历
+    while(currentBTNode!=NULL || !isEmpty_StackLinkList(stackLinkList)){
+        if(currentBTNode){ //走到最左边，即当前栈顶元素没有左子树
+            push_StackLinkList(stackLinkList,currentBTNode);
+            currentBTNode=currentBTNode->lChild;
+        }else{
+            //获取栈顶元素
+            opResult=peek_StackLinkList(stackLinkList,&temp);
+            if(FAIL==opResult)
+                return FAIL;
+            currentBTNode=(BinaryTreeNode *)temp;
+            //如果当前栈顶元素的右子树存在且未被访问过，探查右子树
+            if(currentBTNode->rChild!=NULL && currentBTNode->rChild!=preCurrentBTNode)
+                currentBTNode=currentBTNode->rChild;
+            else{ //当前栈顶元素的右子树不存在，则直接访问当前栈顶元素
+                pop_StackLinkList(stackLinkList,&temp);
+                if(FAIL==opResult)
+                    return FAIL;
+                currentBTNode=(BinaryTreeNode *)temp;
+                //加入访问序列
+                (*pOrderList)[indexOrderList++]=currentBTNode->data;
+
+                //更新最近访问节点,即对下轮while来说上次访问的节点
+                preCurrentBTNode=currentBTNode;
+                //currentBtNode访问完成后，相当于一当前currentBTNode为根的子树，全部被遍历完
+                currentBTNode=NULL;
+            }
+        }
+    }
+
+
+    //销毁辅助栈
+    opResult= destroy_StackLinkList(&stackLinkList);
+    if(opResult==FAIL)
+        return FAIL;
+
+    return SUCCESS;
 }
 
 
@@ -318,14 +387,14 @@ Status preOrder_R_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
 void inOrder(BinaryTreeNode *binaryTreeNode,void **orderList,int *indexOrderList){
     if(binaryTreeNode!=NULL){
         //访问当前节点的左节点
-        preOrder(binaryTreeNode->lChild,orderList,indexOrderList);
+        inOrder(binaryTreeNode->lChild,orderList,indexOrderList);
 
         //将当前访问的节点存入遍历列表中
         orderList[*indexOrderList]=binaryTreeNode->data;
         (*indexOrderList)++;
 
         //访问当前节点的左节点
-        preOrder(binaryTreeNode->rChild,orderList,indexOrderList);
+        inOrder(binaryTreeNode->rChild,orderList,indexOrderList);
     }
 }
 //二叉树递归中序遍历,orderList返回遍历data序列
@@ -349,9 +418,9 @@ Status inOrder_R_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
 //递归后序遍历,将结果存入orderList中
 void postOrder(BinaryTreeNode *binaryTreeNode,void **orderList,int *indexOrderList){
     if(binaryTreeNode!=NULL){
-        //访问当前节点的左右节点
-        preOrder(binaryTreeNode->lChild,orderList,indexOrderList);
-        preOrder(binaryTreeNode->rChild,orderList,indexOrderList);
+        //访问当前节点的左,右节点
+        postOrder(binaryTreeNode->lChild,orderList,indexOrderList);
+        postOrder(binaryTreeNode->rChild,orderList,indexOrderList);
 
         //将当前访问的节点存入遍历列表中
         orderList[*indexOrderList]=binaryTreeNode->data;
@@ -376,8 +445,6 @@ Status postOrder_R_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
     postOrder(binaryTree->rootNode,*pOrderList,&indexOrderList);
     return SUCCESS;
 }
-
-
 
 //二叉树层次遍历,orderList返回遍历data序列
 Status levelOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
@@ -410,14 +477,14 @@ Status levelOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
     BinaryTreeNode *currentBTNode=NULL;
     void *temp;
     //直到当前队列为空，则所有节点访问完毕
-    while(isEmpty_QueueByLinkList(queueByLinkList)){
+    while(!isEmpty_QueueByLinkList(queueByLinkList)){
         //队头节点出队列并访问
         opResult=dequeue_QueueByLinkList(queueByLinkList,&temp);
         if(FAIL==opResult)
             return FAIL;
         currentBTNode=(BinaryTreeNode *)temp;
         //将出队节点加入访问队列
-        (*pOrderList)[indexOrderList++]=currentBTNode;
+        (*pOrderList)[indexOrderList++]=currentBTNode->data;
         //如果出队节点有左右子树 则入队
         if(currentBTNode->lChild!=NULL) {
             opResult = enqueue_QueueByLinkList(queueByLinkList, currentBTNode->lChild);
