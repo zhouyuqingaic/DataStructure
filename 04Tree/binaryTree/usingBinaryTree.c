@@ -144,7 +144,8 @@ void usingBinayrTree(){
 
 
 
-void main(){
 
-    usingBinayrTree();
-}
+//void main(){
+//
+//    usingBinayrTree();
+//}
