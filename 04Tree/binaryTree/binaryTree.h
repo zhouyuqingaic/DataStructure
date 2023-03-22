@@ -26,8 +26,7 @@ typedef void (*PRINT_DATA)(void *);
 
 
 typedef struct _BINARY_TREE_NODE{
-    void *data;     //节点的id
-    void *value; //节点代表数数据值
+    void *data;     //节点数据
     struct _BINARY_TREE_NODE *lChild;  //二叉树节点的右孩子
     struct _BINARY_TREE_NODE *rChild;  //二叉树节点的左孩子
 }BinaryTreeNode; //二叉树节点
