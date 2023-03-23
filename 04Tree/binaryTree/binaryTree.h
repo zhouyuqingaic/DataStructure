@@ -27,6 +27,8 @@ typedef void (*PRINT_DATA)(void *);
 
 typedef struct _BINARY_TREE_NODE{
     void *data;     //节点数据
+    int testingData; //测试用数据
+    int bf; //节点平衡因子
     struct _BINARY_TREE_NODE *lChild;  //二叉树节点的右孩子
     struct _BINARY_TREE_NODE *rChild;  //二叉树节点的左孩子
 }BinaryTreeNode; //二叉树节点

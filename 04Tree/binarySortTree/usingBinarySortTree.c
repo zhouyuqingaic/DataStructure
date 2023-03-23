@@ -91,13 +91,10 @@ void usingBinarySortTree(){
 
     //填充测试数据02
     int *dataList02[10];
-    for(int i=0;i<10;i+=2){
+    int tempList02[10]={29,24,35,33,19,27,26,28,39,34};
+    for(int i=0;i<10;i++){
         dataList02[i]=(int *)malloc(sizeof(int));
-        *(dataList02[i])=i+300;
-    }
-    for(int i=1;i<10;i+=2){
-        dataList02[i]=(int *)malloc(sizeof(int));
-        *(dataList02[i])=i+200;
+        *(dataList02[i])=tempList02[i];
     }
     printf("原始data数据:\n\t");
     for(int i=0;i<10;i++)
@@ -151,6 +148,7 @@ void usingBinarySortTree(){
 
     for(int i=0;i<10;i++) {
         temp=dataList02[i];
+        int testingData=*((int *)temp);
         opResult = deleteNode_BinarySortTree(binarySortTree, compareDataBinarySortTree, temp);
         if (SUCCESS == opResult) {
             printf("销毁");
@@ -174,9 +172,93 @@ void usingBinarySortTree(){
         printf("\n-----*-----\n");
     }
 
-
-
     printf("\n-----------------------------------3-----------------------------------\n");
+
+    //填充测试数据03
+    int *dataList03[10];
+    int tempList03[10]={4,9,5,12,1,2,6,11,14,15};
+
+    //填充测试数据
+    for(int i=0;i<10;i++){
+        dataList03[i]=(int *)malloc(sizeof(int));
+        *(dataList03[i])=tempList03[i];
+    }
+
+    printf("原始data数据:\n\t");
+    for(int i=0;i<10;i++)
+        printItemBinarySortTree(dataList03[i]);
+    printf("\n");
+
+    opResult= create_BinarySortTree(&binarySortTree,compareDataBinarySortTree,dataList03,10);
+    if(FAIL==opResult){
+        printf("利用dataList创建数据失败\n");
+        return;
+    }
+
+    printf("\n获取二叉排序树结果:\n\t");
+    opResult= sortedDatas_BinarySortTree(binarySortTree,&sortedDatas);
+    if(FAIL==opResult)
+        printf("获取二叉排序树 排序结果失败\n");
+    else{
+        for(int i=0;i<binarySortTree->amountNodes;i++)
+            printItemBinarySortTree(sortedDatas[i]);
+        printf("\n");
+    }
+
+
+
+    for(int i=0;i<4;i++) {
+        temp=dataList02[i];
+        opResult = deleteNode_BinarySortTree(binarySortTree, compareDataBinarySortTree, temp);
+        if (SUCCESS == opResult) {
+            printf("(递归方式)销毁");
+            printItemBinarySortTree(temp);
+            printf("节点成功\n");
+        } else {
+            printf("(递归方式)销毁");
+            printItemBinarySortTree(temp);
+            printf("节点失败\n");
+        }
+
+        printf("\n获取删除节点后二叉排序树结果:\n\t");
+        opResult = sortedDatas_BinarySortTree(binarySortTree, &sortedDatas);
+        if (FAIL == opResult)
+            printf("获取删除节点后二叉排序树 排序结果失败\n");
+        else {
+            for (int i = 0; i < binarySortTree->amountNodes; i++)
+                printItemBinarySortTree(sortedDatas[i]);
+            printf("\n");
+        }
+        printf("\n-----*-----\n");
+    }
+
+    for(int i=0;i<10;i++) {
+        temp=dataList03[i];
+        opResult = deleteNode_BinarySortTree(binarySortTree, compareDataBinarySortTree, temp);
+        if (SUCCESS == opResult) {
+            printf("(递归方式)销毁");
+            printItemBinarySortTree(temp);
+            printf("节点成功\n");
+        } else {
+            printf("(递归方式)销毁");
+            printItemBinarySortTree(temp);
+            printf("节点失败\n");
+        }
+
+        printf("\n获取删除节点后二叉排序树结果:\n\t");
+        opResult = sortedDatas_BinarySortTree(binarySortTree, &sortedDatas);
+        if (FAIL == opResult)
+            printf("获取删除节点后二叉排序树 排序结果失败\n");
+        else {
+            for (int i = 0; i < binarySortTree->amountNodes; i++)
+                printItemBinarySortTree(sortedDatas[i]);
+            printf("\n");
+        }
+        printf("\n-----*-----\n");
+    }
+
+
+    printf("\n-----------------------------------4-----------------------------------\n");
 
     //销毁数据data
     for(int i=0;i<10;i++){
@@ -186,7 +268,7 @@ void usingBinarySortTree(){
     //销毁排序列表
     free(sortedDatas);
     //销毁二叉排序树
-    opResult= destroy_BinaryTree(&binarySortTree);
+    opResult= destroy_BinarySortTree(&binarySortTree);
     if(FAIL==opResult){
         printf("销毁二叉排序树失败!\n");
     }

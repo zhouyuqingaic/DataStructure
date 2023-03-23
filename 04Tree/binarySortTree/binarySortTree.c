@@ -77,6 +77,7 @@ Status appendNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINA
         if(binarySortTreeNode==NULL)
             return FAIL;
         binarySortTreeNode->data=data;
+//        binarySortTreeNode->testingData=*((int *)data);
         binarySortTreeNode->rChild=NULL;
         binarySortTreeNode->lChild=NULL;
 
@@ -97,6 +98,7 @@ Status appendNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINA
             if(binarySortTreeNode==NULL)
                 return FAIL;
             binarySortTreeNode->data=data;
+//            binarySortTreeNode->testingData=*((int *)data);
             binarySortTreeNode->rChild=NULL;
             binarySortTreeNode->lChild=NULL;
 
@@ -182,189 +184,107 @@ Status removeDirectFollowUp(BinarySortTreeNode **pRootNode,BinarySortTreeNode *d
     return SUCCESS;
 }
 
-//删除data节点
+//删除节点
+Status deleteNode(BinarySortTreeNode **pBinarySortTreeNode){
+    BinarySortTreeNode *tempNode=NULL;
+    if( (*pBinarySortTreeNode)->lChild!=NULL && (*pBinarySortTreeNode)->rChild!=NULL ){
+        //情况1:待删节点左右子树都不空
+
+        //找到待删节点的直接后继(直接后继节点要么为叶节点 要么只有右子树)
+        BinarySortTreeNode *preDirectFollowUpNode=(*pBinarySortTreeNode)->rChild; //直接后继节点的父节点
+        BinarySortTreeNode *directFollowUpNode=(*pBinarySortTreeNode)->rChild; //直接后继节点
+        while(directFollowUpNode->lChild!=NULL) {
+            preDirectFollowUpNode=directFollowUpNode;
+            directFollowUpNode = directFollowUpNode->lChild;
+        }
+
+        //直接前驱的父节点就是 待删节点
+        if(preDirectFollowUpNode == directFollowUpNode){
+            tempNode=*pBinarySortTreeNode;
+            //指向待删节点 的父节点指针(或BinarySortTree->rootNode指针)指向待删节点的直接后继
+            *pBinarySortTreeNode=directFollowUpNode;
+            //直接后继节点指向替代待删节点的位置，指向待删节点的左子树,直接后继节点的右子树就是其原来的右子树
+            directFollowUpNode->lChild=tempNode->lChild;
+
+            //释放节点
+            free(tempNode);
+        }else { //直接前驱的父节点是 待删节点的子节点
+            //此时直接后继节点一定是其父节点的左子树
+            //如果直接后继节点有右子树，直接后继节点的父节点的右孩子指向 直接后继节点的右子树
+            //                      否则指向空
+            if (directFollowUpNode->rChild != NULL) {
+                preDirectFollowUpNode->lChild=directFollowUpNode->rChild;
+            } else {
+                preDirectFollowUpNode->lChild=NULL;
+            }
+            tempNode=*pBinarySortTreeNode;
+            //指向待删节点 的父节点指针(或BinarySortTree->rootNode指针)指向待删节点的直接后继
+            *pBinarySortTreeNode=directFollowUpNode;
+            //直接后继节点指向替代待删节点的位置，指向待删节点的左右子树
+            directFollowUpNode->lChild=tempNode->lChild;
+            directFollowUpNode->rChild=tempNode->rChild;
+            //释放节点
+            free(tempNode);
+        }
+    }else if( (*pBinarySortTreeNode)->lChild!=NULL || (*pBinarySortTreeNode)->rChild!=NULL ){
+        //情况2:待删节点只有左子树 或 右子树 非空
+
+        if( (*pBinarySortTreeNode)->lChild!=NULL ){ //只有左子树非空
+            tempNode=*pBinarySortTreeNode;
+            //指向待删节点 的父节点指针(或BinarySortTree->rootNode指针)指向待删节点左子树
+            (*pBinarySortTreeNode)=(*pBinarySortTreeNode)->lChild;
+            //释放节点
+            free(tempNode);
+        }else{ //只有右子树非空
+            tempNode=*pBinarySortTreeNode;
+            //指向待删节点 的父节点指针(或BinarySortTree->rootNode指针)指向待删节点右子树
+            (*pBinarySortTreeNode)=(*pBinarySortTreeNode)->rChild;
+            //释放节点
+            free(tempNode);
+        }
+    }else{
+        //情况3:待删节点为叶节点 左右子树都不空
+        tempNode=*pBinarySortTreeNode;
+        //修改指向该节点的父节点指针(或BinarySortTree->rootNode指针)为空
+        *pBinarySortTreeNode=NULL;
+        //释放节点
+        free(tempNode);
+    }
+    return SUCCESS;
+}
+//从rootNode为根的二叉排序树中 删除data节点
+Status deleteBST(BinarySortTreeNode **pBinarySortTreeNode,COMPAR_DATA_BINARY_SORT_TREE compare_data,void *data){
+    if(*pBinarySortTreeNode==NULL) //找不到data节点
+        return FAIL;
+    else{
+        int compareResult=compare_data( (*pBinarySortTreeNode)->data, data );
+        if(compareResult==-1){
+            //当前节点小于data,则data在当前节点的右边
+            return deleteBST(&( (*pBinarySortTreeNode)->rChild ),compare_data,data);
+        }else if(compareResult==1){
+            //当前节点大于data，则data在当前节点的左边
+            return deleteBST(&( (*pBinarySortTreeNode)->lChild ),compare_data,data);
+        }else{
+            //找到data节点,删除data节点
+            return deleteNode(pBinarySortTreeNode);
+        }
+    }
+}
+//删除data节点(递归方法)
 Status deleteNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINARY_SORT_TREE compare_data,void *data){
     if(binarySortTree==NULL)
         return FAIL;
-    if(binarySortTree->amountNodes==0) //树为空 删除失败
+    if(binarySortTree->amountNodes==0) //二叉排序树为空 删除失败
         return FAIL;
-    //找到要删除的目标节点
-    BinarySortTreeNode *deleteNode= search(binarySortTree->rootNode,compare_data,data);
-    if(deleteNode==NULL) //要删除节点不存在,删除失败
-        return FAIL;
-
-    /*
-     找到待删节点的父节点
-        有一种特殊情况为:preTreeNode == currentTreeNode == binarySortTree->rootNode,
-         (即待删节点为树的根节点才会出现这种情况)
-     */
-    //指向当前节点的父节点
-    BinarySortTreeNode *preTreeNode=binarySortTree->rootNode;
-    //指向当前节点
-    BinarySortTreeNode *currentTreeNode=binarySortTree->rootNode;
-
-    //找到删除节点的父节点
-    while(1){
-        //比较当前节点与待删节点
-        int compareResult=compare_data(currentTreeNode->data,deleteNode->data);
-        if(compareResult==-1) { //当前节点小于待删节点
-            //更新父节点
-            preTreeNode=currentTreeNode;
-            //待删节点在当前节点的右边
-            currentTreeNode=currentTreeNode->rChild;
-        }else if(compareResult==1){ //当前节点大于待删节点
-            //更新父节点
-            preTreeNode=currentTreeNode;
-            // 待删节点在当前节点的左边
-            currentTreeNode=currentTreeNode->lChild;
-        }else{ //当前节点等于待删节点,
-            // 找到当前节点的父节点，跳出循环
-            break;
-        }
-    }
-
-    if(deleteNode->rChild!=NULL && deleteNode->lChild!=NULL){
-        //情况1,待删节点有左右子树
-
-        //获取待删节点的直接后继节点(待删节点右子树中序遍历的第一个节点)
-        //直接后继节点 为叶子节点 或 只有右子节点不空
-        BinarySortTreeNode *directFollowUpNode=dirctFollowUp(deleteNode->rChild);
-
-        if(preTreeNode==currentTreeNode){
-            //特殊情况:待删节点为根节点，且根节点有左子树和右子树
-
-            //在以为deleteNode->rChild子树上移除directFollowUpNode节点
-            //该节点只能为叶子节点 或  只有右子树的节点
-            Status opResult= removeDirectFollowUp(
-                    &(deleteNode->rChild),directFollowUpNode,compare_data);
-            if(opResult==FAIL)
-                return FAIL;
-
-            //将directFollowUpNode直接后继节点放到待删节点位置(根节点位置)
-            binarySortTree->rootNode=directFollowUpNode;
-            directFollowUpNode->lChild=deleteNode->lChild;
-            directFollowUpNode->rChild=deleteNode->rChild;
-
-            //释放待删节点
-            free(deleteNode);
-        }else {
-            //普通情况，待删节点非根节点，为有左子树和右子树 的普通节点
-            //更新待删节点父节点的 左 或 右子节点
-            if (preTreeNode->lChild == deleteNode) {
-                //待删节点在其父节点的左子节点
-
-                //在以为deleteNode->lChild右树上移除directFollowUpNode节点
-                //该节点只能为叶子节点 或  只有右子树的节点
-                Status opResult= removeDirectFollowUp(
-                        &(deleteNode->rChild),directFollowUpNode,compare_data);
-
-                if(opResult==FAIL)
-                    return FAIL;
-
-                //将directFollowUpNode直接后继节点放到待删节点位置(其父节点的左子节点节点位置)
-                preTreeNode->lChild=directFollowUpNode;
-                directFollowUpNode->lChild=deleteNode->lChild;
-                directFollowUpNode->rChild=deleteNode->rChild;
-
-                //释放待删节点
-                free(deleteNode);
-            }else{
-                //待删节点在其父节点的右子节点
-
-                //在以为deleteNode->rChild子树上移除directFollowUpNode节点
-                //该节点只能为叶子节点 或  只有右子树的节点
-                Status opResult= removeDirectFollowUp(
-                        &(deleteNode->rChild),directFollowUpNode,compare_data);
-
-                if(opResult==FAIL)
-                    return FAIL;
-
-                //将directFollowUpNode直接后继节点放到待删节点位置(其父节点的左子节点节点位置)
-                preTreeNode->lChild=directFollowUpNode;
-                directFollowUpNode->lChild=deleteNode->lChild;
-                directFollowUpNode->rChild=deleteNode->rChild;
-
-                //释放待删节点
-                free(deleteNode);
-            }
-        }
-    }else if(deleteNode->rChild!=NULL || deleteNode->lChild!=NULL){
-        //情况2，待删节 只有左子树 或 右子树
-        if(preTreeNode==currentTreeNode){
-            //特殊情况:待删节点为根节点，且根节点只有左子树 或 右子树
-            if(currentTreeNode->lChild!=NULL){
-                //待删节点的左子树不空
-
-                //更新根节点
-                binarySortTree->rootNode=currentTreeNode->lChild;
-                //删除待删节点
-                free(currentTreeNode);
-            }else{
-                //待删节点的右子树不空
-
-                //更新根节点
-                binarySortTree->rootNode=currentTreeNode->rChild;
-                //删除待删节点
-                free(currentTreeNode);
-            }
-        }else{
-            //普通情况，待删节点非根节点，为只有左子树 或 右子树 的普通节点
-
-            //更新待删节点父节点的 左 或 右子节点
-            if(preTreeNode->lChild==currentTreeNode){
-                //待删节点在其父节点的左子节点
-
-                if(currentTreeNode->lChild!=NULL) { //待删节点的左子树不空
-                    //将父节点的左节点指向 待删节点的左子树
-                    preTreeNode->lChild = currentTreeNode->lChild;
-                }else { //待删节点的右子树不空
-                    //将父节点的左节点指向 待删节点的右子树
-                    preTreeNode->lChild = currentTreeNode->rChild;
-                }
-            }else{
-                //待删节点在其父节点的右子节点
-
-                if(currentTreeNode->lChild!=NULL) { //待删节点的左子树不空
-                    //将父节点的右节点指向 待删节点的左子树
-                    preTreeNode->rChild = currentTreeNode->lChild;
-                }else { //待删节点的右子树不空
-                    //将父节点的右节点指向 待删节点的右子树
-                    preTreeNode->rChild = currentTreeNode->rChild;
-                }
-            }
-
-            //释放待删节点
-            free(currentTreeNode);
-        }
-
+    //删除二叉排序数中的data节点
+    Status opResult= deleteBST(&(binarySortTree->rootNode),compare_data,data);
+    if(opResult==SUCCESS){
+        //删除成功，节点总数-1
+        binarySortTree->amountNodes--;
+        return SUCCESS;
     }else{
-        //情况3,待删节点 为叶节点，没有左子树，也没有右子树
-        if(preTreeNode==currentTreeNode){
-            //特殊情况:待删节点为根节点，且根节点为叶子节点
-            free(binarySortTree->rootNode);
-
-            binarySortTree->rootNode=NULL;
-        }else{
-            //普通情况，待删节点非根节点，只是普通叶子节点
-
-            //更新待删节点父节点的 左 或 右子节点
-            if(preTreeNode->lChild==currentTreeNode){
-                //待删节点在其父节点的左子节点上
-                preTreeNode->lChild=NULL;
-            }else{
-                //待删节点在其父节点的右子节点
-                preTreeNode->rChild=NULL;
-            }
-
-            //释放待删节点
-            free(currentTreeNode);
-        }
+        return FAIL;
     }
-
-    //删除后树的节点数减少1个
-    binarySortTree->amountNodes--;
-
-    return SUCCESS;
 }
 
 

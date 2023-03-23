@@ -39,12 +39,12 @@ Status init_BinarySortTree(BinarySortTree **binarySortTree);
 Status getNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINARY_SORT_TREE compare_data,void *data,BinarySortTreeNode **resultNode);
 //添加data节点到二叉排序树
 Status appendNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINARY_SORT_TREE compare_data,void *data);
-//删除data节点
+//删除data节点(递归方法)
 Status deleteNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINARY_SORT_TREE compare_data,void *data);
 //获取排序后的data
 Status sortedDatas_BinarySortTree(BinarySortTree *binarySortTree,void ***sortedDatas);
 
-//通过传入{id:value}列表创建二叉排序树
+//通过传入data列表创建二叉排序树
 Status create_BinarySortTree(BinarySortTree **pBinarySortTree,COMPAR_DATA_BINARY_SORT_TREE compare_data,void *datas[],int n);
 
 //销毁二叉排序树
