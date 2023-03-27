@@ -475,7 +475,7 @@ Status levelOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList){
         return FAIL;
     //currentBTNode指向当前要遍历的节点
     BinaryTreeNode *currentBTNode=NULL;
-    void *temp;
+    void *temp=NULL;
     //直到当前队列为空，则所有节点访问完毕
     while(!isEmpty_QueueByLinkList(queueByLinkList)){
         //队头节点出队列并访问

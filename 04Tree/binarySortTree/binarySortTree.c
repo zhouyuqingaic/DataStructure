@@ -92,7 +92,7 @@ Status appendNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINA
         binarySortTreeNode= search(binarySortTree->rootNode,compare_data,data);
 
         if (binarySortTreeNode==NULL){
-            //data为id的节点不存在
+            //data节点不存在
             //创建节点，并为节点赋值
             binarySortTreeNode=(BinarySortTreeNode *)malloc(sizeof(BinarySortTreeNode));
             if(binarySortTreeNode==NULL)
@@ -102,7 +102,7 @@ Status appendNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINA
             binarySortTreeNode->rChild=NULL;
             binarySortTreeNode->lChild=NULL;
 
-            //id节点插入到目标叶节点位置
+            //data节点插入到目标叶节点位置
             Status opRsult=append(&(binarySortTree->rootNode),compare_data,binarySortTreeNode);
             if(FAIL==opRsult){ //插入失败
                 //释放创建的临时节点
@@ -289,7 +289,7 @@ Status deleteNode_BinarySortTree(BinarySortTree *binarySortTree,COMPAR_DATA_BINA
 
 
 //获取排序后的data
-Status sortedDatas_BinarySortTree(BinarySortTree *binarySortTree,void ***sortedDatas){
+Status sortedDatas_BinarySortTree(BinarySortTree *binarySortTree,void ***pSortedDatas){
     if(binarySortTree==NULL)
         return FAIL;
     //排序树为空，执行失败
@@ -297,7 +297,7 @@ Status sortedDatas_BinarySortTree(BinarySortTree *binarySortTree,void ***sortedD
         return FAIL;
 
     //二叉排序数，中间序列遍历序列即为排序结果
-    return inOrder_R_BinaryTree(binarySortTree,sortedDatas);
+    return inOrder_R_BinaryTree(binarySortTree,pSortedDatas);
 }
 
 

@@ -60,6 +60,20 @@ Status inOrder_R_BinaryTree(BinaryTree *binaryTree,void ***pOrderList);
 //二叉树递归后序遍历,orderList返回遍历data序列
 Status postOrder_R_BinaryTree(BinaryTree *binaryTree,void ***pOrderList);
 
+////获取subRoot为根的二叉树的高度
+//int heigh_BinaryTree(BinaryTreeNode *subRoot){
+//    if(subRoot==NULL)
+//        return 0;
+//    //subRoot左子树的高度
+//    int lChildHeigh= heigh_BinaryTree(subRoot->lChild);
+//    //subRoot右子树的高度
+//    int rChildHeigh= heigh_BinaryTree(subRoot->rChild);
+//    //返回当前子树的高度
+//    if(lChildHeigh>rChildHeigh)
+//        return lChildHeigh+1;
+//    else
+//        return rChildHeigh+1;
+//}
 
 //二叉树层次遍历,orderList返回遍历data序列
 Status levelOrder_BinaryTree(BinaryTree *binaryTree,void ***pOrderList);
