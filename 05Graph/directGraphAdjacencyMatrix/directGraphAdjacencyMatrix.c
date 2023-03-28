@@ -264,7 +264,7 @@ Status Dijkstra(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int v
         return FAIL;
 
     //最短路径集
-    int *set=(int *)malloc(sizeof(int)*directedGraphAdjacencyMatrix->vertexsNum);
+    int set[directedGraphAdjacencyMatrix->vertexsNum];
 
     //路径列表
     if(*pPath!=NULL)
@@ -292,10 +292,23 @@ Status Dijkstra(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int v
     set[vertexId]=1;
     path[vertexId]=-1;
 
+//    //调试观察参数用
+//    int current_Path[directedGraphAdjacencyMatrix->vertexsNum];
+//    int current_Dist[directedGraphAdjacencyMatrix->vertexsNum];
+
+
     int MIN=NO_EDGE,u=0;
     //开始构建到剩余directedGraphAdjacencyMatrix->vertexsNum-1个节点的最短路径
     for(int i=0;i<directedGraphAdjacencyMatrix->vertexsNum-1;i++){
+
+//        //调试观察参数用
+//        for(int x=0;x<directedGraphAdjacencyMatrix->vertexsNum;x++){
+//            current_Path[x]=path[x];
+//            current_Dist[x]=dist[x];
+//        }
+
         //选出通往剩余节点的最短路径
+        MIN=NO_EDGE;
         for(int j=0;j<directedGraphAdjacencyMatrix->vertexsNum;j++){
             if(set[j]==0 &&  dist[j]!=NO_EDGE){ //当前存在到j的最短路径
                 //记录最短路径
@@ -336,7 +349,6 @@ Status Dijkstra(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int v
         }
     }
 
-    free(set);
     return SUCCESS;
 }
 
@@ -349,6 +361,17 @@ Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *direc
     int *path=NULL;
     //构建从startVertex到剩余顶点最短路径
     Status opResult= Dijkstra(directedGraphAdjacencyMatrix,startVertex,&dist,&path);
+    if(FAIL==opResult)
+        return FAIL;
+
+//    //调试观察参数用
+//    int current_Path[directedGraphAdjacencyMatrix->vertexsNum];
+//    int current_Dist[directedGraphAdjacencyMatrix->vertexsNum];
+//    //调试观察参数用
+//    for(int x=0;x<directedGraphAdjacencyMatrix->vertexsNum;x++){
+//        current_Path[x]=path[x];
+//        current_Dist[x]=dist[x];
+//    }
 
     int stack[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],top=-1,current=endVertex;
     //到endVetex的最短路径不存在，则寻路算法失败
@@ -366,14 +389,16 @@ Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *direc
     //返回路径节点的data数据列表
     if(*pListData!=NULL)
         free(*pListData);
-    *pListData=(void **)malloc(sizeof(void *)*top);
-    *lengthListData=top;
+    *pListData=(void **)malloc(sizeof(void *)*(top+1));
+    *lengthListData=top+1;
+
+
 
     //路径序列退栈，并将路径节点data加入data列表中
     int indexDatas=0;
     while(top!=-1){
         current=stack[top--];
-        (*pListData)[indexDatas++]=directedGraphAdjacencyMatrix->edges[current];
+        (*pListData)[indexDatas++]=directedGraphAdjacencyMatrix->vertexs[current].data;
     }
 
     return SUCCESS;

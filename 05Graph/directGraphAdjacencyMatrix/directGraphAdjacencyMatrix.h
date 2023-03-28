@@ -76,7 +76,7 @@ Status create_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirec
                                            void *datas[],int datasLength);
 
 //利用向图邻接矩阵的地杰斯特拉算法，得到从startVertex到endVertex最短路径
-Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int startVertex,int endVertex,void **listData);
+Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int startVertex,int endVertex,void ***pListData,int *lengthListData);
 
 //销毁有向图邻接矩阵
 Status destroy_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirectedGraphAdjacencyMatrix);

@@ -119,9 +119,43 @@ void using_directGraphAdjacencyMatrix(){
     printf("\n---------------------------------3---------------------------------\n");
 
 
+    printf("\n\t在不允许图中有自连接的情况下,迪杰斯特拉寻路算法如下\n");
+    void **roadList=NULL;
+    int lengthRoadList=0;
+    for(int i=0;i<7;i++) {
+        opResult = dijkstra_DirectedGraphAdjacencyMatrix(directedGraphAdjacencyMatrix, 0, i, &roadList,
+                                                         &lengthRoadList);
+        if (FAIL == opResult) {
+            printf("寻找从0节点到%d节点的最短路径失败\n",i);
+        }else {
+            printf("从0节点到%d节点的最短路径为:\n", i);
+            for (int i = 0; i < lengthRoadList; i++) {
+                PRINT_DATA_DIRECT_GRAPH_ADJACENCY_MATRIX(roadList[i]);
+                printf("  ");
+            }
+            printf("\n");
+        }
+    }
+
+
+    printf("\n---------------------------------4---------------------------------\n");
+
+    for(int i=0;i<datasLength;i++) {
+        free(datas[i]);
+        free(datas01[i]);
+    }
+    opResult=destroy_DirectedGraphAdjacencyMatrix(&directedGraphAdjacencyMatrix);
+    if(FAIL==opResult){
+        perror("销毁有向图失败");
+        return;
+    }else{
+        printf("清空全部数据成功");
+    }
+
 }
 
 int main(){
     using_directGraphAdjacencyMatrix();
+
     return 0;
 }
