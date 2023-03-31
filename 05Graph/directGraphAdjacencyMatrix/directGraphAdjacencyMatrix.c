@@ -404,6 +404,127 @@ Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *direc
     return SUCCESS;
 }
 
+
+//弗洛伊德算法，从A(-1)与path(-1) 开始构建到 A(vertexsNum-1)与path(vertexNum-1)
+Status Floyd(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,
+             int A[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],
+             int path[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]){
+    if(directedGraphAdjacencyMatrix==NULL || A==NULL || path==NULL)
+        return FAIL;
+    //初始化传入的A与path
+    for(int i=0;i<directedGraphAdjacencyMatrix->vertexsNum;i++) {
+        for (int j = 0; j < directedGraphAdjacencyMatrix->vertexsNum; j++) {
+            A[i][j] = directedGraphAdjacencyMatrix->edges[i][j];
+            path[i][j] = -1;
+        }
+    }
+
+    //从path(-1)与A(-1) 递推到 path(vertexsNum-1)与A(vertexsNum-1)
+    for(int z=0;z<directedGraphAdjacencyMatrix->vertexsNum;z++){
+        //以z为中间节点，探查从i到j的路径中是否有 经过中间节点z的更短路径
+        for(int i=0;i<directedGraphAdjacencyMatrix->vertexsNum;i++){
+            for(int j=0;j<directedGraphAdjacencyMatrix->vertexsNum;j++){
+                if(A[i][j]!=NO_EDGE && A[i][z]!=NO_EDGE && A[z][j]!=NO_EDGE){
+                    //如果i到j之间存在路径 且 i到z存在路径 且z到j存在路径
+                    //则判断 i->z->j是否是条更短路径，是的话则更新
+                    if(A[i][j] > A[i][z]+A[z][j]){
+                        A[i][j]=A[i][z]+A[z][j];
+                        path[i][j]=z;
+                    }
+                }else if(A[i][j]==NO_EDGE && A[i][z]!=NO_EDGE && A[z][j]!=NO_EDGE) {
+                    //如果i到j之间不存在路径 且 i到z存在路径 且z到j存在路径
+                    //则将i到j的路径 更新为 i->z->j
+                    A[i][j]=A[i][z]+A[z][j];
+                    path[i][j]=z;
+                }else{
+                    //其他情况什么都不做
+                }
+            }
+        }
+    }
+
+    return SUCCESS;
+}
+
+//通过path与A矩阵求出从stratVertex到endVertex的最短路径
+void FloydPath(int startVertex,int endVertex,int A[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],
+               int path[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],int pathList[],int *pathListLength){
+
+//    //调试用，查看测试数据
+//    int current_A[7][7],current_path[7][7];
+//    for(int i=0;i<7;i++)
+//        for(int j=0;j<7;j++){
+//            current_A[i][j]=A[i][j];
+//            current_path[i][j]=path[i][j];
+//        }
+
+    if(A[startVertex][endVertex]==NO_EDGE){
+        //从startVertex到endVetex的路径不存在，则什么都不用做
+    }else{
+        //从startVertex到endVetex的路径存在，则探查路径
+        if(path[startVertex][endVertex]==-1){
+            //如果startVertex到endVertex之间有直接路径，则直接输出路径
+
+            if((*pathListLength)==0){ //第一条有向边加入路径节点，边的头结点和尾节点都有加入路径
+                pathList[(*pathListLength)++] = startVertex;
+                pathList[(*pathListLength)++] = endVertex;
+            }else{ //不是第一条有向边，该边的头节点已经进入节点表了，只需要将尾节点入节点表
+                pathList[(*pathListLength)++] = endVertex;
+            }
+
+        }else{
+            //如果startVertex到endVertex之间有中间节点
+            int midVertext=path[startVertex][endVertex];
+            //获取从startVertex到midVertex之间的中间节点
+            FloydPath(startVertex,midVertext,A,path,pathList,pathListLength);
+            //获取从midVertex到endVertex之间的中间节点
+            FloydPath(midVertext,endVertex,A,path,pathList,pathListLength);
+        }
+    }
+}
+
+//利用有向量邻接矩阵的弗洛伊德算法，得到从startVertex到endVertex最短路径
+Status floyd_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int startVertex,int endVertex,void ***pListData,int *lengthListData){
+    if(directedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+
+    //创建用于弗洛伊德算法的A与path数组
+    int A[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
+    int path[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
+    //执行floyd算法，获取path与A矩阵
+    Status opResult= Floyd(directedGraphAdjacencyMatrix,A,path);
+    if(opResult==FAIL)
+        return FAIL;
+
+//    //调试用，查看测试数据
+//    int current_A[7][7],current_path[7][7];
+//    for(int i=0;i<7;i++)
+//        for(int j=0;j<7;j++){
+//            current_A[i][j]=A[i][j];
+//            current_path[i][j]=path[i][j];
+//        }
+
+    //根据path与A获取从 startVertex到endVertex的路径
+    int pathList[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
+    int pathListLength=0;
+    FloydPath(startVertex,endVertex,A,path,pathList,&pathListLength);
+
+    if(pathListLength==0) //从startVertex到endVertex没有路径，则寻找两点之间的最短路径失败
+        return FAIL;
+
+    //创建返回路径的节点的data数据列表
+    if(*pListData!=NULL)
+        free(*pListData);
+    *pListData=(void **)malloc(sizeof(void *)*pathListLength);
+
+    *lengthListData=pathListLength;
+    for(int i=0;i<pathListLength;i++)
+        (*pListData)[i] = directedGraphAdjacencyMatrix->vertexs[ pathList[i] ].data;
+
+
+    return SUCCESS;
+}
+
 //销毁有向图邻接矩阵
 Status destroy_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirectedGraphAdjacencyMatrix){
     //邻接矩阵为空 ，直接返回

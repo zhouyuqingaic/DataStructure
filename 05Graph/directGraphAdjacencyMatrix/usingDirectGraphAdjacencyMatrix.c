@@ -129,16 +129,33 @@ void using_directGraphAdjacencyMatrix(){
             printf("寻找从0节点到%d节点的最短路径失败\n",i);
         }else {
             printf("从0节点到%d节点的最短路径为:\n", i);
-            for (int i = 0; i < lengthRoadList; i++) {
-                PRINT_DATA_DIRECT_GRAPH_ADJACENCY_MATRIX(roadList[i]);
+            for (int j = 0; j < lengthRoadList; j++) {
+                PRINT_DATA_DIRECT_GRAPH_ADJACENCY_MATRIX(roadList[j]);
                 printf("  ");
             }
             printf("\n");
         }
     }
 
-
     printf("\n---------------------------------4---------------------------------\n");
+
+    printf("\n\t在不允许图中有自连接的情况下,Floyd寻路算法如下\n");
+    for(int i=0;i<7;i++) {
+        opResult = floyd_DirectedGraphAdjacencyMatrix(directedGraphAdjacencyMatrix, 0, i, &roadList,
+                                                         &lengthRoadList);
+        if (FAIL == opResult) {
+            printf("寻找从0节点到%d节点的最短路径失败\n",i);
+        }else {
+            printf("从0节点到%d节点的最短路径为:\n", i);
+            for (int j = 0; j < lengthRoadList; j++) {
+                PRINT_DATA_DIRECT_GRAPH_ADJACENCY_MATRIX(roadList[j]);
+                printf("  ");
+            }
+            printf("\n");
+        }
+    }
+
+    printf("\n---------------------------------5---------------------------------\n");
 
     for(int i=0;i<datasLength;i++) {
         free(datas[i]);
@@ -152,10 +169,12 @@ void using_directGraphAdjacencyMatrix(){
         printf("清空全部数据成功");
     }
 
+
 }
 
-int main(){
-    using_directGraphAdjacencyMatrix();
-
-    return 0;
-}
+//int main(){
+//    printf("");
+//    using_directGraphAdjacencyMatrix();
+//
+//    return 0;
+//}
