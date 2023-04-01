@@ -47,9 +47,9 @@ typedef struct{
 
 //清空有向图邻接矩阵(即清空所有边)
 Status empty_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix);
-//初始为有datasLenght个节点的有向图化邻接矩阵
+//初始为有vertexsNum个节点的有向图邻接矩阵
 Status init_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirectedGraphAdjacencyMatrix,
-                                         void *datas[],int datasLength);
+                                         void *vertexsData[],int vertexsNum);
 //展示有向图邻接矩阵
 Status showAdjacencyMatrix__DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix);
 
@@ -68,12 +68,13 @@ Status setVertex_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *dire
 Status BFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,
                                         int vertexId,void ***pListData,int *lengthListData);
 //深度遍历有向图邻接矩阵
+//从vertexId深度遍历有向图邻接矩阵
 Status DFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,
                                         int vertexId,void ***listData,int *lengthListData);
 //通过传入二维矩阵创建有向图邻接矩阵
 Status create_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirectedGraphAdjacencyMatrix,
                                            int edges[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],
-                                           void *datas[],int datasLength);
+                                           void *vertexsData[],int vertexsNum);
 
 //利用向图邻接矩阵的地杰斯特拉算法，得到从startVertex到endVertex最短路径
 Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int startVertex,int endVertex,void ***pListData,int *lengthListData);

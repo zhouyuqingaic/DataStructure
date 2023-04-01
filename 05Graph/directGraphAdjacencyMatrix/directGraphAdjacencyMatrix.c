@@ -14,33 +14,37 @@ Status empty_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directed
     for(i=0;i<directedGraphAdjacencyMatrix->vertexsNum;i++)
         for(j=0;j<directedGraphAdjacencyMatrix->vertexsNum;j++)
             directedGraphAdjacencyMatrix->edges[i][j]=NO_EDGE;
+    //当前图的边数全部为0
+    directedGraphAdjacencyMatrix->edgesNum=0;
     return SUCCESS;
 }
 //初始为有datasLenght个节点的有向图化邻接矩阵
+//初始为有vertexsNum个节点的有向图邻接矩阵
 Status init_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirectedGraphAdjacencyMatrix,
-                                         void *datas[],int datasLength){
+                                         void *vertexsData[],int vertexsNum){
     //判断节点个数是否在最大值范围内(1 ~ MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX)
-    if(datasLength<0 || datasLength>MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX)
+    if(vertexsNum<0 || vertexsNum>MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX)
         return FAIL;
 
-    if((*pDirectedGraphAdjacencyMatrix)==NULL) //有向图不存在，则创建
-        *pDirectedGraphAdjacencyMatrix=(DirectedGraphAdjacencyMatrix *)malloc(sizeof(DirectedGraphAdjacencyMatrix));
-
-    if(*pDirectedGraphAdjacencyMatrix==NULL)
-        return FAIL;
+    if((*pDirectedGraphAdjacencyMatrix)==NULL) {
+        //有向图不存在，则创建
+        *pDirectedGraphAdjacencyMatrix = (DirectedGraphAdjacencyMatrix *) malloc(sizeof(DirectedGraphAdjacencyMatrix));
+        if (*pDirectedGraphAdjacencyMatrix == NULL)
+            return FAIL;
+    }
 
     //设置边数,顶点数
     (*pDirectedGraphAdjacencyMatrix)->edgesNum=0;
-    (*pDirectedGraphAdjacencyMatrix)->vertexsNum=datasLength;
+    (*pDirectedGraphAdjacencyMatrix)->vertexsNum=vertexsNum;
 
-    //清空所有边
+    //重置所有的边为-1
     Status opResult = empty_DirectedGraphAdjacencyMatrix(*pDirectedGraphAdjacencyMatrix);
     if (opResult == FAIL)
         return FAIL;
 
-    //设置边节点的数据
+    //设置结点的数据
     for(int i=0;i<(*pDirectedGraphAdjacencyMatrix)->vertexsNum;i++)
-        (*pDirectedGraphAdjacencyMatrix)->vertexs[i].data=datas[i];
+        (*pDirectedGraphAdjacencyMatrix)->vertexs[i].data=vertexsData[i];
 
     return SUCCESS;
 }
@@ -111,7 +115,7 @@ Status setVertex_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *dire
 
 
 //广度遍历
-Status BFS(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int vertexId,
+Status BFS_DGAM(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int vertexId,
            DirctedGraphAdjacencyMatrixNode *nodeList,int *indexNodeList,
            int visited[]){
     //创建辅助队列
@@ -160,7 +164,7 @@ Status BFS(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int vertex
     }
 
     //销毁辅助队列
-    opResult=destroy_QueueByLinkList(queueByLinkList);
+    opResult=destroy_QueueByLinkList(&queueByLinkList);
     if(FAIL==opResult)
         return FAIL;
 
@@ -171,6 +175,9 @@ Status BFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGr
                                         int vertexId,void ***pListData,int *lengthListData){
     if(directedGraphAdjacencyMatrix==NULL)
         return FAIL;
+    //判断访问节点vertexId是否在合法范围(0 ~ directedGraphAdjacencyMatrix->vertexsNum-1)内部
+    if(vertexId<0 || vertexId>=directedGraphAdjacencyMatrix->vertexsNum)
+        return FAIL;
     //设置节点访问数组
     int visited[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
     for(int i=0;i<directedGraphAdjacencyMatrix->vertexsNum;i++)
@@ -179,12 +186,16 @@ Status BFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGr
     int indexNodeList=0;
 
     //开始广度遍历邻接矩阵
-    BFS(directedGraphAdjacencyMatrix,vertexId,nodeList,&indexNodeList,visited);
+    BFS_DGAM(directedGraphAdjacencyMatrix,vertexId,nodeList,&indexNodeList,visited);
+    if(indexNodeList==0) //遍历序列的长度为0，则遍历失败
+        return FAIL;
 
     //返回遍历出来的data数据
     if(*pListData!=NULL)
         free(*pListData);
     *pListData=(void **)malloc(sizeof(void *)*indexNodeList);
+    if(*pListData==NULL)
+        return FAIL;
     *lengthListData=indexNodeList;
 
     for(int i=0;i<indexNodeList;i++)
@@ -195,28 +206,29 @@ Status BFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGr
 
 
 //深度遍历
-Status DFS(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int vertexId,
+void DFS_DGAM(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int vertexId,
                                         DirctedGraphAdjacencyMatrixNode *nodeList,int *indexNodeList,
                                         int *visited){
     if(visited[vertexId]==0){
         //当前vertexId节点没有被访问过
         //直接加入访问序列
-        nodeList[*indexNodeList]=directedGraphAdjacencyMatrix->vertexs[vertexId];
-        (*indexNodeList)++;
+        nodeList[(*indexNodeList)++]=directedGraphAdjacencyMatrix->vertexs[vertexId];
         //将该节点标记已访问
         visited[vertexId]=1;
     }
-    //当前vertexId节点已经被访问过
+
     //找到从该节点发出的边连接的没有被访问过的节点
     for(int i=0;i<directedGraphAdjacencyMatrix->vertexsNum;i++)
         if(directedGraphAdjacencyMatrix->edges[vertexId][i]!=NO_EDGE && visited[i]==0)
-            DFS(directedGraphAdjacencyMatrix,i,nodeList,indexNodeList,visited);
-    return SUCCESS;
+            DFS_DGAM(directedGraphAdjacencyMatrix,i,nodeList,indexNodeList,visited);
 }
 //从vertexId深度遍历有向图邻接矩阵
 Status DFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,
                                         int vertexId,void ***pListData,int *lengthListData){
     if(directedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+    //判断访问节点vertexId是否在合法范围(0 ~ directedGraphAdjacencyMatrix->vertexsNum-1)内部
+    if(vertexId<0 || vertexId>=directedGraphAdjacencyMatrix->vertexsNum)
         return FAIL;
     //设置节点访问数组
     int visited[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
@@ -225,12 +237,16 @@ Status DFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGr
     DirctedGraphAdjacencyMatrixNode nodeList[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
     int indexNodeList=0;
     //开始深度遍历有向图邻接矩阵
-    DFS(directedGraphAdjacencyMatrix,vertexId,nodeList,&indexNodeList,visited);
+    DFS_DGAM(directedGraphAdjacencyMatrix,vertexId,nodeList,&indexNodeList,visited);
+    if(indexNodeList==0) //遍历序列的长度为0，则遍历失败
+        return FAIL;
 
     //返回遍历出来的data数据
     if(*pListData!=NULL)
         free(*pListData);
     *pListData=(void **)malloc(sizeof(void *)*indexNodeList);
+    if(*pListData==NULL)
+        return FAIL;
     *lengthListData=indexNodeList;
 
     for(int i=0;i<indexNodeList;i++)
@@ -242,9 +258,9 @@ Status DFS_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGr
 //通过传入二维矩阵创建有向图邻接矩阵
 Status create_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix **pDirectedGraphAdjacencyMatrix,
                                            int edges[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],
-                                           void *datas[],int datasLength){
+                                           void *vertexsData[],int vertexsNum){
     //初始化为有datasLength个节点邻接矩阵
-    Status opResult= init_DirectedGraphAdjacencyMatrix(pDirectedGraphAdjacencyMatrix,datas,datasLength);
+    Status opResult= init_DirectedGraphAdjacencyMatrix(pDirectedGraphAdjacencyMatrix,vertexsData,vertexsNum);
     if(FAIL==opResult)
         return FAIL;
     //为邻接矩阵设置边,并统计边数
@@ -355,6 +371,11 @@ Status Dijkstra(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int v
 //利用向图邻接矩阵的地杰斯特拉算法，得到从startVertex到endVertex最短路径
 Status dijkstra_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int startVertex,int endVertex,void ***pListData,int *lengthListData){
     if(directedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+    //判断边的起点与终点是否在合理范围内(0~directedGraphAdjacencyMatrix->vertexNum-1)
+    if(startVertex<0 || startVertex>=directedGraphAdjacencyMatrix->vertexsNum)
+        return FAIL;
+    if(endVertex<0 || endVertex>=directedGraphAdjacencyMatrix->vertexsNum)
         return FAIL;
 
     int *dist=NULL;
@@ -486,6 +507,12 @@ void FloydPath(int startVertex,int endVertex,int A[][MAX_SIZE_DIRCTED_GRAPH_ADJA
 //利用有向量邻接矩阵的弗洛伊德算法，得到从startVertex到endVertex最短路径
 Status floyd_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *directedGraphAdjacencyMatrix,int startVertex,int endVertex,void ***pListData,int *lengthListData){
     if(directedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+
+    //判断边的起点与终点是否在合理范围内(0~directedGraphAdjacencyMatrix->vertexNum-1)
+    if(startVertex<0 || startVertex>=directedGraphAdjacencyMatrix->vertexsNum)
+        return FAIL;
+    if(endVertex<0 || endVertex>=directedGraphAdjacencyMatrix->vertexsNum)
         return FAIL;
 
     //创建用于弗洛伊德算法的A与path数组

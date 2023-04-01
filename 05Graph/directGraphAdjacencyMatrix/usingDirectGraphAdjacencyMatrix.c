@@ -173,7 +173,6 @@ void using_directGraphAdjacencyMatrix(){
 }
 
 //int main(){
-//    printf("");
 //    using_directGraphAdjacencyMatrix();
 //
 //    return 0;
