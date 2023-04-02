@@ -50,7 +50,7 @@ Status empty_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGrap
 Status init_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList **pDirectedGraphAdjacencyList,
                                          void *vertexDatas[],
                                          int vertexsNum);
-//为有向图邻接表设置边
+//为有向图邻接表设置边(边的值为负数或者0表示该边不存在，不用设置 直接返回)
 Status setEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphAdjancecyList,
                                              int startPoint,int endPoint,
                                              int lengthArc);

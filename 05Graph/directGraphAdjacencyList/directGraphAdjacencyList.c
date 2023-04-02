@@ -4,6 +4,7 @@
 
 #include "directGraphAdjacencyList.h"
 #include "../../01SerialList/queueByLinkList/queueByLinkList.h"
+#include "../directGraphAdjacencyMatrix/directGraphAdjacencyMatrix.h"
 
 //清空有向图邻接表
 Status empty_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphAdjancecyList){
@@ -41,6 +42,10 @@ Status init_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList **pDirectedGra
         *pDirectedGraphAdjacencyList = (DirectedGraphAdjancecyList *) malloc(sizeof(DirectedGraphAdjancecyList));
         if(*pDirectedGraphAdjacencyList==NULL)
             return FAIL;
+        //将所有节点的第一条边置空
+        for(int i=0;i<MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_LIST;i++){
+            (*pDirectedGraphAdjacencyList)->vertexs[i].firstArc=NULL;
+        }
     }else{
         //存在则清空所有边
         Status opResult= empty_DirectedGraphAdjancecyList(*pDirectedGraphAdjacencyList);
@@ -53,13 +58,15 @@ Status init_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList **pDirectedGra
     (*pDirectedGraphAdjacencyList)->vertexsNum=vertexsNum;
 
     //设置结点数据
-    for(int i=0;i<(*pDirectedGraphAdjacencyList)->vertexsNum;i++)
-        (*pDirectedGraphAdjacencyList)->vertexs[i].data=vertexDatas[i];
+    for(int i=0;i<(*pDirectedGraphAdjacencyList)->vertexsNum;i++) {
+        (*pDirectedGraphAdjacencyList)->vertexs[i].id=i;
+        (*pDirectedGraphAdjacencyList)->vertexs[i].data = vertexDatas[i];
+    }
 
     return SUCCESS;
 }
 
-//为有向图邻接表设置边
+//为有向图邻接表设置边(边的值为负数或者0表示该边不存在，不用设置 直接返回)
 Status setEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphAdjancecyList,
                                              int startPoint,int endPoint,
                                              int lengthArc){
@@ -71,6 +78,9 @@ Status setEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGr
         return FAIL;
     if(endPoint<0 || endPoint>=directedGraphAdjancecyList->vertexsNum)
         return FAIL;
+    if(lengthArc<=0)
+        //边的值为负数或者0表示该边不存在，不用设置 直接返回
+        return SUCCESS;
     //探查startPoint节点发出的所有边
     Arc_DirectedGraphAdjancecyList *currentArc=
             directedGraphAdjancecyList->vertexs[startPoint].firstArc;
@@ -85,7 +95,7 @@ Status setEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGr
         currentArc=currentArc->nextArc;
     }
     //没有找到从startPoint指向endPoint的边，创建权值为lengthArc,且指向endPoint的边
-    // 挂到startPoint节点发出的边列表的后面
+    // 挂到startPoint节点发出的边列表的最后面
     Arc_DirectedGraphAdjancecyList *newArc=(Arc_DirectedGraphAdjancecyList *)malloc(sizeof(Arc_DirectedGraphAdjancecyList));
     if(NULL==newArc)
         return FAIL;
@@ -93,10 +103,79 @@ Status setEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGr
     newArc->lengthArc=lengthArc;
     newArc->adjVex=endPoint;
 
-    preCurrentArc->nextArc=newArc;
+    if(preCurrentArc==NULL) {
+        //由于preCurrentArc为空，则newArc为从startPoint发出的第一条边
+        directedGraphAdjancecyList->vertexs[startPoint].firstArc = newArc;
+    }else{
+        //由于preCurrentArc不为空，则preCurrentArc指向从startPoint节点的边列表的最后一条边，边newArc挂在preCurrentArc后面
+        preCurrentArc->nextArc = newArc;
+    }
+    //由于是新增边，所以边数增加1
+    directedGraphAdjancecyList->edgesNum+=1;
 
     return SUCCESS;
 }
+
+//获取有向量邻接表中从startPoint到endPoint有向边的权值,Status==FAIL表示没有从startPoint到endPoint的有向边
+Status getEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphAdjancecyList,
+                                          int startPoint,int endPoint,
+                                          int *lengthArc){
+    if(directedGraphAdjancecyList==NULL)
+        return FAIL;
+
+    //判断边的起点与终点是否在合理范围内(0~directedGraphAdjacencyList->vertexNum-1)
+    if(startPoint<0 || startPoint>=directedGraphAdjancecyList->vertexsNum)
+        return FAIL;
+    if(endPoint<0 || endPoint>=directedGraphAdjancecyList->vertexsNum)
+        return FAIL;
+
+    //探查从startPoint发出的每一条边，探查其是否连接到endPoint
+    Arc_DirectedGraphAdjancecyList *currentArc=directedGraphAdjancecyList->vertexs[startPoint].firstArc;
+    while(currentArc!=NULL){
+        if(currentArc->adjVex==endPoint){
+            //找到连接到endPoint的边，获取边的权值
+            *lengthArc=currentArc->lengthArc;
+            return SUCCESS;
+        }
+        currentArc=currentArc->nextArc;
+    }
+    //找不到从startPoint连接到endPoint的边
+    return FAIL;
+}
+
+//通过邻接矩阵的形式展示矩阵邻接表
+Status show_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphAdjancecyList){
+    if(directedGraphAdjancecyList==NULL)
+        return FAIL;
+    Status opResult=FAIL;
+    int edgeLength=NO_EDGE;
+    printf("\n\t\t当前图的节点数:%d 图的边数:%d\n",directedGraphAdjancecyList->vertexsNum,
+           directedGraphAdjancecyList->edgesNum);
+    printf("\t\t");
+    for(int i=0;i< directedGraphAdjancecyList->vertexsNum;i++)
+        printf("%4d",i);
+    printf("\n\n");
+    for(int i=0;i<directedGraphAdjancecyList->vertexsNum;i++){
+        printf("%4d\t",i);
+
+        for(int j=0;j<directedGraphAdjancecyList->vertexsNum;j++){
+            //获取所有从i节点 连接到 j节点的边的长度
+            opResult= getEdge_DirectedGraphAdjancecyList(directedGraphAdjancecyList,
+                                                         i,j,&edgeLength);
+            if(FAIL==opResult){
+                //从i节点 到 j节点没有边
+                printf("%4d",NO_EDGE);
+            }else{
+                //从i节点 到 j节点有边
+                printf("%4d",edgeLength);
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+    return SUCCESS;
+}
+
 //删除有向图邻接表的边
 Status deleteEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphAdjancecyList,
                                           int startPoint,int endPoint){
@@ -120,8 +199,8 @@ Status deleteEdge_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directe
     }
 
     if(currentArc==NULL){
-        //没有找到从startPoint指向endPoint的边，无需操作直接返回删除成功
-        return SUCCESS;
+        //没有找到从startPoint指向endPoint的边，删除失败
+        return FAIL;
     }else{
         //currentArc指向当前要删除的 从startPoint到endPoint的边
         if(preCurrentArc==NULL){
@@ -150,23 +229,25 @@ Status BFS_DGAL(DirectedGraphAdjancecyList *directedGraphAdjancecyList,int visit
         return FAIL;
 
     //获取当前节点并入队
-    Vertex_DirectedGraphAdjancecyList currentVertex=directedGraphAdjancecyList->vertexs[startVertex];
-    opResult= enqueue_QueueByLinkList(queueByLinkList,&currentVertex);
+    Vertex_DirectedGraphAdjancecyList *pCurrentVertex=&(directedGraphAdjancecyList->vertexs[startVertex]);
+    opResult= enqueue_QueueByLinkList(queueByLinkList,pCurrentVertex);
     if(FAIL==opResult)
         return FAIL;
     //访问入队节点并加入访问序列
-    (*pListData)[(*lengthListData)++]=currentVertex.data;
+    (*pListData)[(*lengthListData)++]=(*pCurrentVertex).data;
     visited[startVertex]=1;
 
     //广度遍历所有节点
+
     while(!isEmpty_QueueByLinkList(queueByLinkList)){
         //队列头元素出队列
-        opResult= dequeue_QueueByLinkList(queueByLinkList,(void *)&currentVertex);
+        opResult= dequeue_QueueByLinkList(queueByLinkList,(void **)&pCurrentVertex);
         if(FAIL==opResult)
             return FAIL;
 
         //当期出队列节点所连接的所有未被访问的节点入队列，并访问
-        Arc_DirectedGraphAdjancecyList *arcCurrent=currentVertex.firstArc;
+        pCurrentVertex=(Vertex_DirectedGraphAdjancecyList *)pCurrentVertex;
+        Arc_DirectedGraphAdjancecyList *arcCurrent=(*pCurrentVertex).firstArc;
         while(arcCurrent!=NULL){
             if(visited[arcCurrent->adjVex]==0){
                 //当前所连接的节点arcCurrent->adjVex节点没有被访问过，则节点入队列并加入访问队列
@@ -274,7 +355,19 @@ Status DFS_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGraphA
 Status create_DirectedGraphAdjacencyList(DirectedGraphAdjancecyList **pDirectedGraphAdjancecyList,
                                          int edges[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_LIST],
                                          void *vertexDatas[],int vertexNum){
-
+    //初始化有vertexNum个结点的邻接表
+    Status opResult= init_DirectedGraphAdjancecyList(pDirectedGraphAdjancecyList,vertexDatas,vertexNum);
+    if(FAIL==opResult)
+        return FAIL;
+    //为*pDirectedGraphAdjancecyList邻接表设置从i到j的边
+    for(int i=0;i<vertexNum;i++)
+        for(int j=0;j<vertexNum;j++){
+            opResult=setEdge_DirectedGraphAdjancecyList(*pDirectedGraphAdjancecyList,
+                                                        i,j,edges[i][j]);
+            if(opResult==FAIL)
+                return FAIL;
+        }
+    return SUCCESS;
 }
 
 //销毁有向图邻接矩阵
