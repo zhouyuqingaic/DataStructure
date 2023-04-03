@@ -58,7 +58,7 @@ Status showAdjacencyMatrix__DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyM
     printf("\t\t");
     for(int i=0;i< directedGraphAdjacencyMatrix->vertexsNum;i++)
         printf("%4d",i);
-    printf("\n");
+    printf("\n\n");
     for(int i=0;i<directedGraphAdjacencyMatrix->vertexsNum;i++){
         printf("%4d\t",i);
         for(int j=0;j<directedGraphAdjacencyMatrix->vertexsNum;j++)
@@ -85,10 +85,12 @@ Status setEdge_DirectedGraphAdjacencyMatrix(DirectedGraphAdjacencyMatrix *direct
         //将原来存在的边设置为NO_EDGE,为消去边的情况，边数-1
         directedGraphAdjacencyMatrix->edgesNum-=1;
     }else if(edgeLength!=NO_EDGE && directedGraphAdjacencyMatrix->edges[startPoint][endPoint]==NO_EDGE){
-        //将原来存在的边NO_EDGE不存在,将边设置为存在的情况，边数+1
+        //原来边NO_EDGE不存在,将边设置为存在的情况，边数+1
         directedGraphAdjacencyMatrix->edgesNum+=1;
     }else{
+        //其他情况
         //原来边存在，且也不将边设置为NO_EDGE,则总边数不变
+        //原来边不存在，且也将边设置为NO_EDGE,则总边数不变
     }
 
     directedGraphAdjacencyMatrix->edges[startPoint][endPoint]=edgeLength;

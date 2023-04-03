@@ -152,8 +152,8 @@ void using_directGraphAdjacencyList(){
     printf("\n----------------------------全部数据销毁完毕----------------------------\n");
 }
 
-int main(){
-    using_directGraphAdjacencyList();
-
-    return 0;
-}
+//int main(){
+//    using_directGraphAdjacencyList();
+//
+//    return 0;
+//}
