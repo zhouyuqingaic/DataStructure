@@ -57,6 +57,141 @@ Status setVertex_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *
     return setVertex_DirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,id,data);
 }
 
+typedef struct{
+    int  aVertex,bVertex; //边连接的两个顶点
+    int edgeLength; //边的长度
+}Edge_UnDirectedGraphAdjacencyMatrix;
+
+//通过普里姆算法生成最小生成树，返回表示最小生成树的无向图邻接矩阵pUnDirectedGraphAdjacencyMatrix_Result
+Status primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
+                                           int startVertex,UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result){
+    if(unDirectedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+    //获取原无向图的节点data数据
+    int datasLength=0;
+    void *datas[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
+    for(datasLength=0;datasLength<unDirectedGraphAdjacencyMatrix->vertexsNum;datasLength++)
+        datas[datasLength]=unDirectedGraphAdjacencyMatrix->vertexs[datasLength].data;
+    //创建与原无向图的节点数相同的空无向图(表示最小生成树的无向图)
+    Status opResult=init_UnDirectedGraphAdjacencyMatrix(pUnDirectedGraphAdjacencyMatrix_Result,
+                                                        datas,datasLength);
+    if(FAIL==opResult)
+        return FAIL;
+
+    int v=startVertex;
+    Edge_UnDirectedGraphAdjacencyMatrix lowCost_Edge[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]; //当前生成树到剩余节点的最短边长
+    int vSet[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]; //已经并入树中的节点集合
+    //将v节点加入最小生成树，并设置最小生成树到剩余节点的最短边长
+    for(int i=0;i<unDirectedGraphAdjacencyMatrix->vertexsNum;i++){
+
+        lowCost_Edge[i].aVertex=v;
+        lowCost_Edge[i].bVertex=i;
+        lowCost_Edge[i].edgeLength=unDirectedGraphAdjacencyMatrix->edges[v][i];
+
+        if(i==v)
+            vSet[i]=1;
+        else
+            vSet[i]=0;
+    }
+
+    //将剩余unDirectedGraphAdjacencyMatrix->vertexsNum-1个节点加入最小生成树中
+    int min;
+    for(int i=0;i<unDirectedGraphAdjacencyMatrix->vertexsNum-1;i++){
+        //选出当前生成树到剩余节点的最短边
+        min=NO_EDGE;
+        for(int j=0;j<unDirectedGraphAdjacencyMatrix->vertexsNum;j++){
+            if(vSet[j]==0 && lowCost_Edge[j].edgeLength!=NO_EDGE){
+                //当前最小生成树到剩余节点j的边存在
+                if(min==NO_EDGE){
+                    min=lowCost_Edge[j].edgeLength;
+                    v=j;
+                }else{
+                    if(min>lowCost_Edge[j].edgeLength){
+                        min=lowCost_Edge[j].edgeLength;
+                        v=j;
+                    }
+                }
+            }
+        }
+        if(min==NO_EDGE){
+            //到剩余节点没有边，剩余节点不可达，图错误
+            //销毁结果图
+            opResult=destroy_UnDirectedGraphAdjacencyMatrix(pUnDirectedGraphAdjacencyMatrix_Result);
+            if(FAIL==opResult){
+                perror("销毁结果图失败!");
+            }
+            return FAIL;
+        }
+        //最短边连接的剩余节点加入树中
+        vSet[v]=1;
+
+        //向表示最小生成树的无向图添加边
+        opResult= setEdge_UnDirectedGraphAdjacencyMatrix(*pUnDirectedGraphAdjacencyMatrix_Result,
+                                                 lowCost_Edge[v].aVertex,lowCost_Edge[v].bVertex,lowCost_Edge[v].edgeLength);
+        if(FAIL==opResult){
+            opResult=destroy_UnDirectedGraphAdjacencyMatrix(pUnDirectedGraphAdjacencyMatrix_Result);
+            if(FAIL==opResult){
+                perror("销毁结果图失败!");
+            }
+            return FAIL;
+        }
+
+
+        //以新并入树的v节点，探查是否有到剩余节点的更短边，来更新lowCost数据
+        for(int j=0;j<unDirectedGraphAdjacencyMatrix->vertexsNum;j++){
+            if(vSet[j]==0){
+                if(lowCost_Edge[j].edgeLength==NO_EDGE){
+                    //原来生成树到j不可达，而v到j节点有边，则将其更
+                    if(unDirectedGraphAdjacencyMatrix->edges[v][j]!=NO_EDGE) {
+                        lowCost_Edge[j].edgeLength = unDirectedGraphAdjacencyMatrix->edges[v][j];
+                        lowCost_Edge[j].aVertex=v;
+                        lowCost_Edge[j].bVertex=j;
+                    }
+                }else{
+                    //原来生成树到j可达，而v到j节点有边且边比原来生成树到j的距离更短，则将其更
+                    if(unDirectedGraphAdjacencyMatrix->edges[v][j]!=NO_EDGE &&
+                        unDirectedGraphAdjacencyMatrix->edges[v][j]<lowCost_Edge[j].edgeLength){
+                        lowCost_Edge[j].edgeLength = unDirectedGraphAdjacencyMatrix->edges[v][j];
+                        lowCost_Edge[j].aVertex=v;
+                        lowCost_Edge[j].bVertex=j;
+                    }
+                }
+            }
+        }
+
+    }
+
+    return SUCCESS;
+}
+
+
+//通过克鲁斯卡尔算法生成最小生成树，返回表示最小生成树的无向图邻接矩阵pUnDirectedGraphAdjacencyMatrix_Result
+Status kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
+                                                 int startVertex,UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result){
+    if(unDirectedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+    //获取原无向图的节点data数据
+    int datasLength=0;
+    void *datas[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
+    for(datasLength=0;datasLength<unDirectedGraphAdjacencyMatrix->vertexsNum;datasLength++)
+        datas[datasLength]=unDirectedGraphAdjacencyMatrix->vertexs[datasLength].data;
+
+    return SUCCESS;
+}
+
+//在无向图的最小生成树中，获取从aVertex到bVertex的路径
+Status pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
+                                                              int aVertex,int bVertex,int ***pDataList,int *lengthDataList){
+    if(unDirectedGraphAdjacencyMatrix==NULL)
+        return FAIL;
+
+
+
+    return SUCCESS;
+}
+
+
+
 //通过传入二维矩阵创建有无向图邻接矩阵
 Status create_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix,
                                              int edges[][MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX],
