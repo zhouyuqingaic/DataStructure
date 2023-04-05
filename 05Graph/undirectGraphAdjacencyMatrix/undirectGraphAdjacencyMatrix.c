@@ -159,6 +159,8 @@ Status primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdj
             }
         }
 
+
+
     }
 
     return SUCCESS;
@@ -181,11 +183,61 @@ Status kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraph
 
 //在无向图的最小生成树中，获取从aVertex到bVertex的路径
 Status pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
-                                                              int aVertex,int bVertex,int ***pDataList,int *lengthDataList){
+                                                              int aVertex,int bVertex,void ***pDataList,int *lengthDataList){
     if(unDirectedGraphAdjacencyMatrix==NULL)
         return FAIL;
 
+    int path[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]; //路径数组,从aVertex节点开始到各节点的路径,元素i的值为i节点在该路径上的上个节点
+    int vSet[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]; //访问节点集合
+    for(int i=0;i<unDirectedGraphAdjacencyMatrix->vertexsNum;i++) {
+        vSet[i] = 0; //标记为未访问过
+        path[i]=-1; //路径数组中，i在路径上的上的上个节点不存在
+    }
+    //a节点加入访问集合
+    vSet[aVertex]=1;
+    path[aVertex]=-1;
 
+    //寻找通往剩余unDirectedGraphAdjacencyMatrix->vertexsNum-1个节点的路径
+    for(int i=0;i<unDirectedGraphAdjacencyMatrix->vertexsNum-1;i++){
+        for(int j=0;j<unDirectedGraphAdjacencyMatrix->vertexsNum;j++){
+            if(vSet[i]==1 && vSet[j]==0 && unDirectedGraphAdjacencyMatrix->edges[i][j]!=NO_EDGE){
+                //最小生成树中 有从到访问过的i节点到 没访问过的j节点的边
+                //将该边加入路径中,并访问
+                path[j]=i;
+                vSet[j]=1;
+            }
+        }
+    }
+
+    //通过path数组获取到从aVertex到bVertex的路径
+    int topStack=-1;
+    int stack[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
+    int currentVertex=bVertex;
+
+    //到bVertex节点的短路径不存在，则获取最小生成树上的节点之间的路径失败
+    if(path[bVertex]==-1)
+        return FAIL;
+
+    //通过path获取从aVertex到bVertex在最小生成树
+    while(path[currentVertex]!=-1){
+        stack[++topStack]=currentVertex;
+        currentVertex=path[currentVertex]; //获取当前节点在路径中的上个节点
+    }
+    //将current(即aVertex)源点加入栈中
+    stack[++topStack]=currentVertex;
+
+    //返回路径节点的data的数据列表
+    if(*pDataList!=NULL)
+        free(*pDataList);
+    *pDataList=(void **)malloc(sizeof(void *)*(topStack+1));
+    *lengthDataList=topStack+1;
+
+    //路径序列退栈，并将路径节点data加入data列表中
+    int indexDatas=0;
+    while(topStack!=-1){
+        currentVertex=stack[topStack--];
+        (*pDataList)[indexDatas++]=unDirectedGraphAdjacencyMatrix->vertexs[currentVertex].data;
+    }
 
     return SUCCESS;
 }

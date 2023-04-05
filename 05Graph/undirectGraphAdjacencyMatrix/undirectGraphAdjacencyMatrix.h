@@ -26,7 +26,6 @@ Status setEdge_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *un
 Status setVertex_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
                                            int id,void *data);
 
-
 //从startVertex开始通过普里姆算法生成最小生成树，返回表示最小生成树的无向图邻接矩阵pUnDirectedGraphAdjacencyMatrix_Result
 Status primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
                                            int startVertex,UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result);
@@ -37,7 +36,7 @@ Status kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraph
 
 //在无向图的最小生成树中，获取从aVertex到bVertex的路径
 Status pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
-                                           int aVertex,int bVertex,int ***pDataList,int *lengthDataList);
+                                           int aVertex,int bVertex,void ***pDataList,int *lengthDataList);
 
 //通过传入二维矩阵创建有无向图邻接矩阵
 Status create_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix,

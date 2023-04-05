@@ -43,7 +43,6 @@ void using_undirectGraphAdjacencyMatrix(){
     if(FAIL==opResult)
         printf("设置边(%d,%d)的权值为 %d 失败",aVertex,bVertex,dataLength);
 
-
     aVertex=1,bVertex=2,edgeLength=3;
     opResult=setEdge_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,aVertex,bVertex,edgeLength);
     if(FAIL==opResult)
@@ -58,7 +57,6 @@ void using_undirectGraphAdjacencyMatrix(){
     opResult=setEdge_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,aVertex,bVertex,edgeLength);
     if(FAIL==opResult)
         printf("设置边(%d,%d)的权值为 %d 失败",aVertex,bVertex,dataLength);
-
 
     aVertex=2,bVertex=4,edgeLength=2;
     opResult=setEdge_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,aVertex,bVertex,edgeLength);
@@ -102,6 +100,34 @@ void using_undirectGraphAdjacencyMatrix(){
 
     printf("\n---------------------------------2---------------------------------\n");
 
+    UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrixResult;
+    opResult=primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,
+                                                           0,&unDirectedGraphAdjacencyMatrix02);
+    if(FAIL==opResult){
+        perror("生成最小生成树失败");
+        return;
+    }
+    printf("\n展示最小生成树\n");
+    opResult=showAdjacencyMatrix__UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix02);
+    if(FAIL==opResult){
+        perror("展示最小生成树失败");
+        return;
+    }
+
+    void **DataList=NULL;
+    int lengthDataLength=0;
+    opResult=pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix02,
+                                                            1,4,&DataList,&lengthDataLength);
+    if(FAIL==opResult){
+        perror("展示最小生成树失败\n");
+        return;
+    }else{
+        for(int i=0;i<lengthDataLength;i++)
+            PRINT_DATA_UNDIRECT_GRAPH_ADJACENCY_MATRIX(DataList[i]);
+    }
+
+    printf("\n---------------------------------2---------------------------------\n");
+
     for(int i=0;i<dataLength;i++)
         free(datas[i]);
     opResult= destroy_UnDirectedGraphAdjacencyMatrix(&unDirectedGraphAdjacencyMatrix);
@@ -116,11 +142,12 @@ void using_undirectGraphAdjacencyMatrix(){
     }
 
     printf("\n---------------------------------释放所有数据完毕---------------------------------\n");
-
-
 }
 
-int main(){
+
+int main() {
     using_undirectGraphAdjacencyMatrix();
 
+
     return 0;
+}
