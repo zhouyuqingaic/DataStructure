@@ -32,7 +32,7 @@ Status primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdj
 
 //从startVertex开始通过克鲁斯卡尔算法生成最小生成树，返回表示最小生成树的无向图邻接矩阵pUnDirectedGraphAdjacencyMatrix_Result
 Status kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
-                                           int startVertex,UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result);
+                                           UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result);
 
 //在无向图的最小生成树中，获取从aVertex到bVertex的路径
 Status pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,

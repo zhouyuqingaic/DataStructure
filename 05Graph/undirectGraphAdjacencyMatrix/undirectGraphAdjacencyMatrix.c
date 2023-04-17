@@ -167,9 +167,16 @@ Status primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdj
 }
 
 
+int getRoot_SearchUnionSet(int *searchUnionSet,int a){
+    //在并查集中寻找a的根节点
+    while(a!=searchUnionSet[a])
+        a=searchUnionSet[a];
+    return a;
+}
+
 //通过克鲁斯卡尔算法生成最小生成树，返回表示最小生成树的无向图邻接矩阵pUnDirectedGraphAdjacencyMatrix_Result
 Status kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrix,
-                                                 int startVertex,UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result){
+                                                 UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix_Result){
     if(unDirectedGraphAdjacencyMatrix==NULL)
         return FAIL;
     //获取原无向图的节点data数据
@@ -177,6 +184,62 @@ Status kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraph
     void *datas[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX];
     for(datasLength=0;datasLength<unDirectedGraphAdjacencyMatrix->vertexsNum;datasLength++)
         datas[datasLength]=unDirectedGraphAdjacencyMatrix->vertexs[datasLength].data;
+    //创建与原无向图节点数相同的空无向图(表示最小生成树的无向图)
+    Status opResult= init_UnDirectedGraphAdjacencyMatrix(pUnDirectedGraphAdjacencyMatrix_Result,
+                                                         datas,datasLength);
+    if(FAIL==opResult)
+        return FAIL;
+
+    Edge_UnDirectedGraphAdjacencyMatrix sorted_edge[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]; //创建所有边的数组
+    int sorted_edge_size=0;
+
+    //将所有存在的边加入sorted_edge中
+    //以从i到j的边如果存在就加入sorted_edge,有向量图关于主对角线对称，所以只用考虑了主对角线下方的
+    for(int i=0;i<unDirectedGraphAdjacencyMatrix->vertexsNum;i++)
+        for(int j=0;j<i;j++)
+            if(unDirectedGraphAdjacencyMatrix->edges[i][j]!=NO_EDGE){
+                sorted_edge[sorted_edge_size].edgeLength=unDirectedGraphAdjacencyMatrix->edges[i][j];
+                sorted_edge[sorted_edge_size].aVertex=i;
+                sorted_edge[sorted_edge_size].bVertex=j;
+                sorted_edge_size++;
+            }
+
+    //利用插入排序,对加入边数组的边进行排序
+    Edge_UnDirectedGraphAdjacencyMatrix tempEdge;
+    for(int i=1;i<sorted_edge_size;i++){
+        //记录待插入的元素
+        tempEdge=sorted_edge[i];
+        //将待插入的元素插入到索引为:0~i-1 的有序序列中
+        int j=i-1;
+        while(j>=0 && tempEdge.edgeLength<sorted_edge[j].edgeLength) {
+            sorted_edge[j + 1] = sorted_edge[j];
+            j--;
+        }
+        sorted_edge[j+1]=tempEdge;
+    }
+
+    //初始化并查集
+    int searchUnionSet[MAX_SIZE_DIRCTED_GRAPH_ADJACENCY_MATRIX]; //并查集数组
+    for(int i=0;i<sorted_edge_size;i++)
+        searchUnionSet[i]=i;
+
+    //遍历从小到大,如果不形成环，就将边加入边集中
+    int aSetRoot,bSetRoot;
+    for(int i=0;i<sorted_edge_size;i++){
+        //获取前边两个端点所属集合的根
+        aSetRoot= getRoot_SearchUnionSet(searchUnionSet,sorted_edge[i].aVertex);
+        bSetRoot= getRoot_SearchUnionSet(searchUnionSet,sorted_edge[i].bVertex);
+        //如果两个节点各自所属的集合不同，则加入该边到树中不会形成环
+        if(aSetRoot!=bSetRoot){
+            //将边加入到树中
+            opResult=setEdge_UnDirectedGraphAdjacencyMatrix(*pUnDirectedGraphAdjacencyMatrix_Result,
+                                                   sorted_edge[i].aVertex,sorted_edge[i].bVertex,sorted_edge[i].edgeLength);
+            if(FAIL==opResult)
+                return FAIL;
+            //该边加入树后，两端点各自所属的集合合并成一个
+            searchUnionSet[aSetRoot]=bSetRoot;
+        }
+    }
 
     return SUCCESS;
 }
@@ -241,8 +304,6 @@ Status pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdj
 
     return SUCCESS;
 }
-
-
 
 //通过传入二维矩阵创建有无向图邻接矩阵
 Status create_UnDirectedGraphAdjacencyMatrix(UnDirectedGraphAdjacencyMatrix **pUnDirectedGraphAdjacencyMatrix,

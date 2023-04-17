@@ -100,17 +100,16 @@ void using_undirectGraphAdjacencyMatrix(){
 
     printf("\n---------------------------------2---------------------------------\n");
 
-    UnDirectedGraphAdjacencyMatrix *unDirectedGraphAdjacencyMatrixResult;
     opResult=primMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,
                                                            0,&unDirectedGraphAdjacencyMatrix02);
     if(FAIL==opResult){
-        perror("生成最小生成树失败");
+        perror("prim算法生成最小生成树失败");
         return;
     }
-    printf("\n展示最小生成树\n");
+    printf("\n展示prim算法最小生成树\n");
     opResult=showAdjacencyMatrix__UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix02);
     if(FAIL==opResult){
-        perror("展示最小生成树失败");
+        perror("展示prim算法最小生成树失败");
         return;
     }
 
@@ -119,14 +118,48 @@ void using_undirectGraphAdjacencyMatrix(){
     opResult=pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix02,
                                                             1,4,&DataList,&lengthDataLength);
     if(FAIL==opResult){
-        perror("展示最小生成树失败\n");
+        perror("获取prim算法最小生成树从1到4的路径节点失败\n");
         return;
     }else{
         for(int i=0;i<lengthDataLength;i++)
             PRINT_DATA_UNDIRECT_GRAPH_ADJACENCY_MATRIX(DataList[i]);
+        //释放节点数组
+        free(DataList);
+        DataList=NULL;
     }
 
-    printf("\n---------------------------------2---------------------------------\n");
+
+    printf("\n---------------------------------3---------------------------------\n");
+
+    opResult= kruskalMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix,
+                                        &unDirectedGraphAdjacencyMatrix02);
+    if(FAIL==opResult){
+        perror("kruskal算法生成最小生成树失败");
+        return;
+    }
+    printf("\n展示kruskal算法最小生成树\n");
+    opResult=showAdjacencyMatrix__UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix02);
+    if(FAIL==opResult){
+        perror("展示kruskal算法最小生成树失败");
+        return;
+    }
+
+
+    lengthDataLength=0;
+    opResult=pathMinimumSpanningTree_UnDirectedGraphAdjacencyMatrix(unDirectedGraphAdjacencyMatrix02,
+                                                                    1,4,&DataList,&lengthDataLength);
+    if(FAIL==opResult){
+        perror("获取kruskal算法最小生成树从1到4的路径节点失败\n");
+        return;
+    }else{
+        for(int i=0;i<lengthDataLength;i++)
+            PRINT_DATA_UNDIRECT_GRAPH_ADJACENCY_MATRIX(DataList[i]);
+        //释放节点数组
+        free(DataList);
+        DataList=NULL;
+    }
+
+    printf("\n---------------------------------4---------------------------------\n");
 
     for(int i=0;i<dataLength;i++)
         free(datas[i]);
