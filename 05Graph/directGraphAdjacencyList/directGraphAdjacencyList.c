@@ -24,7 +24,7 @@ Status empty_DirectedGraphAdjancecyList(DirectedGraphAdjancecyList *directedGrap
         directedGraphAdjancecyList->vertexs[i].firstArc=NULL;
     }
     //有向量邻接表的边数全部为0
-    directedGraphAdjancecyList->vertexsNum=0;
+    directedGraphAdjancecyList->edgesNum=0;
     return SUCCESS;
 }
 
