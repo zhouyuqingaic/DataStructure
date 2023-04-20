@@ -3,7 +3,7 @@
 //
 
 #include "aovGraphAdjacencyList.h"
-#include "../../01SerialList/queueByLinkList/queueByLinkList.h"
+#include "../../01SerialList/stackLinkList/stackLinkList.h"
 #include "../directGraphAdjacencyMatrix/directGraphAdjacencyMatrix.h"
 
 //清空AOV图的邻接表
@@ -104,7 +104,7 @@ Status setEdge_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyLis
         preCurrentArc->nextArc=newArc;
     }
     //endPoint节点的入度1
-    aovGraphAdjacencyList->vertexs[startPoint].enArcAmount+=1;
+    aovGraphAdjacencyList->vertexs[endPoint].enArcAmount+=1;
 
     return SUCCESS;
 }
@@ -144,18 +144,21 @@ Status topSort_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyLis
     if(*pListData==NULL)
         return FAIL;
 
-    //创建辅助队列(队列中存储的都是入度为0的节点)
-    QueueByLinkList *queueByLinkList=NULL;
-    Status opResult= init_QueueByLinkList(&queueByLinkList);
+    //创建辅助栈(栈中存储的都是入度为0的节点)
+    //此处用栈的原因是为了访问出栈节点后，
+    // 如果有出栈节点相连接的入度为0的节点,就继续访问出栈节点相连的入度为0的节点
+    //所以只能用栈，用队列实现不了
+    StackLinkList *stackLinkList=NULL;
+    Status opResult= init_StackLinkList(&stackLinkList);
     if(FAIL==opResult)
         return FAIL;
 
     *lengthListData=0;
-    //将图中所有入度为0节点入队列
+    //将图中所有入度为0节点入栈
     for(int i=0;i<aovGraphAdjacencyList->vertexsNum;i++){
         if(aovGraphAdjacencyList->vertexs[i].enArcAmount==0) {
-            opResult = enqueue_QueueByLinkList(
-                    queueByLinkList, &(aovGraphAdjacencyList->vertexs[i])
+            opResult = push_StackLinkList(
+                    stackLinkList, &(aovGraphAdjacencyList->vertexs[i])
             );
             if(FAIL==opResult)
                 return FAIL;
@@ -164,22 +167,22 @@ Status topSort_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyLis
     //开始拓扑排序
     Vertex_AOVGraphAdjacencyList *currentVertex=NULL;
     Arc_AOVGraphAdjacencyList *currentArc=NULL;
-    while(!isEmpty_QueueByLinkList(queueByLinkList)){
-        //元素出队
-        opResult=dequeue_QueueByLinkList(queueByLinkList,(void *)&currentVertex);
+    while(!isEmpty_StackLinkList(stackLinkList)){
+        //元素出栈
+        opResult= pop_StackLinkList(stackLinkList,(void *)&currentVertex);
         if(FAIL==opResult)
             return FAIL;
-        //访问出队节点，并将出队列节点的数据加入结果序列中
+        //访问出栈节点，并将出队列节点的数据加入结果序列中
         (*pListData)[(*lengthListData)++]=currentVertex->data;
-        //访问过的节点从AOV图的屏蔽，即将其发出的边连接的节点的入度-1
+        //访问过的节点从AOV图屏蔽，将其发出的边连接的节点的入度-1
         currentArc=currentVertex->firstArc;
         while(currentArc!=NULL){
             aovGraphAdjacencyList->vertexs[currentArc->adjVex].enArcAmount-=1;
             if(aovGraphAdjacencyList->vertexs[currentArc->adjVex].enArcAmount==0){
                 //如果入度减1后，边所连接的节点currentArc->adjVex入度为0，
-                // 则将新的入度为0的currentArc->adjVex节点加入队列中
-                opResult= enqueue_QueueByLinkList(
-                        queueByLinkList,&(aovGraphAdjacencyList->vertexs[currentArc->adjVex])
+                // 则将新的入度为0的currentArc->adjVex节点加入栈
+                opResult= push_StackLinkList(
+                        stackLinkList,&(aovGraphAdjacencyList->vertexs[currentArc->adjVex])
                 );
                 if(FAIL==opResult)
                     return FAIL;
@@ -189,8 +192,27 @@ Status topSort_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyLis
 
     }
 
+    //拓扑排序完成后，AOV图的节点入度全部被修改，重新恢复各节点的入度
+    //将各节点的入度修改为0
+    for(int i=0;i<aovGraphAdjacencyList->vertexsNum;i++)
+        aovGraphAdjacencyList->vertexs[i].enArcAmount=0;
+    //访问 AOV网邻接表 所有节点，并修改该节点发出的所边指向的节点的入度
+    for(int i=0;i<aovGraphAdjacencyList->vertexsNum;i++){
+        currentArc=aovGraphAdjacencyList->vertexs[i].firstArc;
+        //将i节点发出的边指向的节点的入度+1
+        while(currentArc!=NULL){
+            aovGraphAdjacencyList->vertexs[currentArc->adjVex].enArcAmount++;
+            currentArc=currentArc->nextArc;
+        }
+    }
+
+    //销毁辅助栈
+    opResult= destroy_StackLinkList(&stackLinkList);
+    if(FAIL==opResult)
+        return FAIL;
+
     //如果所有节点都加入拓扑排序序列，则拓扑排序成功
-    if(lengthListData==aovGraphAdjacencyList->vertexsNum)
+    if((*lengthListData)==aovGraphAdjacencyList->vertexsNum)
         return SUCCESS;
     else
         //如果有剩余节点没有加入拓扑排序序列，则拓扑排序失败

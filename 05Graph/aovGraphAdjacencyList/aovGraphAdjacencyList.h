@@ -31,6 +31,7 @@ typedef void (*PRINT_DATA)(void *);
 typedef struct _ARC_AOVGRAPHADJACENCYLIST{
     int adjVex; //该边指向节点的位置
     struct _ARC_AOVGRAPHADJACENCYLIST *nextArc; //指向从同一节点出发的另一条边
+    int length; //边的权值，即长度
 }Arc_AOVGraphAdjacencyList; //AOV图的邻接表节边元素
 
 typedef struct{
@@ -52,7 +53,7 @@ Status empty_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyList)
 Status init_AOVGraphAdjacencyList(AOVGraphAdjacencyList **pAovGraphAdjacencyList,
                                   void *vertexDatas[],
                                   int vertexsNum);
-//为AOV图的邻接表设置边(边的值为负数或者0表示该边不存在，不用设置 直接返回)
+//为AOV图的邻接表设置边
 Status setEdge_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyList,
                                           int startPoint,int endPoint);
 
