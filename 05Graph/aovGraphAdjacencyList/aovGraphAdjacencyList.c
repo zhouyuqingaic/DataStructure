@@ -105,6 +105,8 @@ Status setEdge_AOVGraphAdjacencyList(AOVGraphAdjacencyList *aovGraphAdjacencyLis
     }
     //endPoint节点的入度1
     aovGraphAdjacencyList->vertexs[endPoint].enArcAmount+=1;
+    //图的边数增加1
+    aovGraphAdjacencyList->edgesNum+=1;
 
     return SUCCESS;
 }

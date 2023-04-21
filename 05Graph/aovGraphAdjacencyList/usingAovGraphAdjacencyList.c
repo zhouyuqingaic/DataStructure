@@ -12,14 +12,14 @@ void using_AOVGraphAdjacencyList(){
     /*
      * AOVGraphAdjacencyList AOV图的邻接表 使用测试案例
      */
-    //当前图的节点数据:5 图的边数:5
+    //当前图的节点数据:5
     //创建节点数据
     void *vertexDatas[MAX_SIZE_AOV_GRAPH_ADJACENCY_LIST];
     for(int i=0;i<5;i++){
         vertexDatas[i]=(char *)malloc(sizeof(char)*60);
         if(vertexDatas[i]==NULL)
             return;
-        sprintf(vertexDatas[i],"<NodeIs:%d _|_ Data:%c>",i,'A'+i);
+        sprintf(vertexDatas[i],"<NodeId:%d _|_ Data:%c>",i,'A'+i);
     }
 
     //创建AOV图
@@ -117,7 +117,7 @@ void using_AOVGraphAdjacencyList(){
 
     printf("\n-----------------------------全部数据释放完毕-----------------------------\n");
 }
-//
+
 //int main(){
 //    using_AOVGraphAdjacencyList();
 //}

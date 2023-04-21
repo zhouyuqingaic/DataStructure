@@ -78,7 +78,7 @@ Status getEtvAndUnTop_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjac
         return FAIL;
     //初始化etv
     for(int i=0;i<aoeGraphAdjacencyList->vertexsNum;i++)
-        pEtvList[i]=0;
+        (*pEtvList)[i]=0;
 
     //创建upTopList逆拓扑排序数组
     if(*pUnTopList!=NULL)
@@ -122,7 +122,7 @@ Status getEtvAndUnTop_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjac
             return FAIL;
 
         //将出栈元素加入 辅助栈02中(用于获取逆拓扑排序序列)
-        opResult= push_StackLinkList(stackLinkList02,(void *)&currentVertex);
+        opResult= push_StackLinkList(stackLinkList02,(void *)currentVertex);
         if(FAIL==opResult)
             return FAIL;
 
@@ -155,11 +155,11 @@ Status getEtvAndUnTop_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjac
     int i=0;
     while(!isEmpty_StackLinkList(stackLinkList02)){
         //元素出栈
-        opResult= pop_StackLinkList(stackLinkList,(void *)&currentVertex);
+        opResult= pop_StackLinkList(stackLinkList02,(void *)&currentVertex);
         if(FAIL==opResult)
             return FAIL;
         //将出栈元素加入逆拓扑排序列表
-        (*pUnTopList)[i]=currentVertex->id;
+        (*pUnTopList)[i++]=currentVertex->id;
     }
 
     //销毁辅助栈
@@ -170,13 +170,21 @@ Status getEtvAndUnTop_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjac
     if(FAIL==opResult)
         return FAIL;
 
+//    printf("\n展示断点调试数据用:\n");
+//    int evtListTemp[aoeGraphAdjacencyList->vertexsNum];
+//    int unTopListTemp[aoeGraphAdjacencyList->vertexsNum];
+//    for(int i=0;i<aoeGraphAdjacencyList->vertexsNum;i++){
+//        evtListTemp[i]=(*pEtvList)[i];
+//        unTopListTemp[i]=(*pUnTopList)[i];
+//    }
+
     return SUCCESS;
 }
 
 
 //获取AOE图的邻接表的关键路径(关键路径的边列表)
 Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjacencyList,
-                                             Arc_AOEGraphAdjacencyList ***pCriticalPathList,
+                                             Edge_AOEGraphAdjacencyList ***pCriticalPathList,
                                              int *criticalPathListLength){
     if(aoeGraphAdjacencyList==NULL)
         return FAIL;
@@ -187,8 +195,8 @@ Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdja
     //边数最多为
     //aoeGraphAdjacencyList->vertexsNum * (aoeGraphAdjacencyList->vertexsNum-1)
     //即每个节点都与其他aoeGraphAdjacencyList->vertexsNum-1 个节点相连
-    *pCriticalPathList=(Arc_AOEGraphAdjacencyList **)malloc(
-            sizeof(Arc_AOEGraphAdjacencyList *)
+    *pCriticalPathList=(Edge_AOEGraphAdjacencyList **)malloc(
+            sizeof(Edge_AOEGraphAdjacencyList *)
             *
             (
                 aoeGraphAdjacencyList->vertexsNum*(aoeGraphAdjacencyList->vertexsNum-1)
@@ -206,13 +214,20 @@ Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdja
     if(FAIL==opResult)
         return FAIL;
 
+
+
     //创建ltv数组(事件最晚发生表)
     int *ltvList=(int *)malloc(sizeof(int)*aoeGraphAdjacencyList->vertexsNum);
-    if(*ltvList==NULL)
+    if(ltvList==NULL)
         return FAIL;
-    //初始化ltv表
+
+    int etvMax=etvList[0];
     for(int i=0;i<aoeGraphAdjacencyList->vertexsNum;i++)
-        ltvList[i]=etvList[i];
+        if(etvMax<etvList[i])
+            etvMax=etvList[i];
+    //初始化ltv表,都设置为最后一个事件的最早发生事件(即最早发生时间的最大值)
+    for(int i=0;i<aoeGraphAdjacencyList->vertexsNum;i++)
+        ltvList[i]=etvMax;
 
     //利用逆拓扑排序序列 构建 ltv事件最晚发生时间表
     Vertex_AOEGraphAdjacencyList currentVertex;
@@ -236,14 +251,23 @@ Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdja
         }
     }
 
+//    printf("\n展示断点调试数据用:\n");
+//    int evtListTemp[aoeGraphAdjacencyList->vertexsNum];
+//    int ltvListTemp[aoeGraphAdjacencyList->vertexsNum];
+//    int unTopListTemp[aoeGraphAdjacencyList->vertexsNum];
+//    for(int i=0;i<aoeGraphAdjacencyList->vertexsNum;i++){
+//        evtListTemp[i]=etvList[i];
+//        unTopListTemp[i]=unTopList[i];
+//        ltvListTemp[i]=ltvList[i];
+//    }
 
-
+    Edge_AOEGraphAdjacencyList *currentEdge=NULL;
     //求各边所代表的 活动 的最早开始事件ete,活动 的最晚开始事件lte
     int ete,lte;
     *criticalPathListLength=0;
     for(int i=0;i<aoeGraphAdjacencyList->vertexsNum;i++){
         //获取当前节点
-        currentVertex=aoeGraphAdjacencyList->vertexs[unTopList[i]];
+        currentVertex=aoeGraphAdjacencyList->vertexs[i];
         //遍历当前节点的每条边
         currentArc=currentVertex.firstArc;
         while(currentArc!=NULL){
@@ -254,7 +278,14 @@ Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdja
 
             //如果lte和vte相等表示活动为关键活动，改边为关键路径的边
             if(ete==lte){
-                *pCriticalPathList[*criticalPathListLength]=currentArc;
+                //该关键路径边由 currentVertex.id 发出 指向 currentArc->adjVex
+                //创建关键路径边
+                currentEdge=(Edge_AOEGraphAdjacencyList *)malloc(sizeof(Edge_AOEGraphAdjacencyList));
+                currentEdge->startPoint=currentVertex.id;
+                currentEdge->endPoint=currentArc->adjVex;
+                currentEdge->length=currentArc->length;
+                //关键路径边 加入关键路径列表
+                (*pCriticalPathList)[*criticalPathListLength]=currentEdge;
                 (*criticalPathListLength)++;
             }
 
@@ -262,6 +293,16 @@ Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdja
         }
     }
 
+    //清空ltvList,etvList,unTopList
+    free(ltvList);
+    free(etvList);
+    free(unTopList);
+
+
+//    printf("\n展示断点调试数据用:\n");
+//    Edge_AOEGraphAdjacencyList *edgesTemp[(*criticalPathListLength)];
+//    for(int i=0;i<(*criticalPathListLength);i++)
+//        edgesTemp[i]=(*pCriticalPathList)[i];
 
     return SUCCESS;
 }

@@ -23,10 +23,19 @@ typedef void (*PRINT_DATA)(void *);
 
 #include "../aovGraphAdjacencyList/aovGraphAdjacencyList.h"
 
+#define MAX_SIZE_AOE_GRAPH_ADJACENCY_LIST 100
+
 typedef AOVGraphAdjacencyList AOEGraphAdjacencyList;
 typedef Arc_AOVGraphAdjacencyList Arc_AOEGraphAdjacencyList;
 typedef Vertex_AOVGraphAdjacencyList Vertex_AOEGraphAdjacencyList;
 
+typedef struct{
+    //边的开始和节点顶点
+    int startPoint;
+    int endPoint;
+    //边的权值长度
+    int length;
+}Edge_AOEGraphAdjacencyList;
 
 //清空AOE图的邻接表
 Status empty_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjacencyList);
@@ -44,7 +53,7 @@ Status getEdge_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjacencyLis
 
 //获取AOE图的邻接表的关键路径(关键路径的边列表)
 Status getCriticalPath_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjacencyList,
-                                             Arc_AOEGraphAdjacencyList ***pCriticalPathList,
+                                             Edge_AOEGraphAdjacencyList ***pCriticalPathList,
                                              int *criticalPathListLength);
 //通过邻接矩阵的形式展示AOE图的邻接表
 Status show_AOEGraphAdjacencyList(AOEGraphAdjacencyList *aoeGraphAdjacencyList);
