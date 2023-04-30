@@ -204,7 +204,9 @@ void usingSwipSort(){
 
 }
 
-int main(){
-    usingSwipSort();
-    return 0;
-}
+
+//
+//int main(){
+//    usingSwipSort();
+//    return 0;
+//}
