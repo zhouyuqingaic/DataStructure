@@ -26,7 +26,10 @@ typedef void (*PRINT_DATA)(void *); //打印数据
 #include<stdio.h>
 #include<malloc.h>
 
+#ifndef COMPARE_DATA_FUNC
+#define COMPARE_DATA_FUNC
 typedef int (*COMPARE_DATA)(void *,void *); //比较数据 1:a>b,0:a=b,-1:a<b
+#endif
 
 //冒泡交换排序
 Status bubbleSwipSort(COMPARE_DATA compareData,void **unSortedDatas,

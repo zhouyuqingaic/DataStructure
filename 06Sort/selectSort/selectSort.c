@@ -82,7 +82,7 @@ Status heapSelectSort(COMPARE_DATA compareData,void **unSortedDatas,
     if(*pSortedDatas==NULL)
         return FAIL;
 
-    //将原始数据复制到 排序结果串 中
+    //将原始数据复制到 排序结果串(堆排序中，序号从1开始) 中
     for(int i=0;i<unSortedDatasLength;i++)
         (*pSortedDatas)[i+1]=unSortedDatas[i];
 

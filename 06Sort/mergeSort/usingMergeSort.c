@@ -1,23 +1,23 @@
 //
-// Created by zhouyuqing on 2023/4/27.
+// Created by zhouyuqing on 2023/4/30.
 //
 
-#include "selectSort.h"
+#include "mergeSort.h"
 
 typedef struct{
     int val;
-}TestElement_SelectSort;
+}TestElement_MergeSort;
 
 //打印数据
-void print_data_selectSort(void *data){
+void print_data_MergeSort(void *data){
     printf("%d ",
-           ((TestElement_SelectSort *)data)->val);
+           ((TestElement_MergeSort *)data)->val);
 }
 
 //比较数据a与数据b的大小
-int compare_data_selectSort(void *a,void *b){
-    TestElement_SelectSort *ta=(TestElement_SelectSort *)a;
-    TestElement_SelectSort *tb=(TestElement_SelectSort *)b;
+int compare_data_mergeSort(void *a,void *b){
+    TestElement_MergeSort *ta=(TestElement_MergeSort *)a;
+    TestElement_MergeSort *tb=(TestElement_MergeSort *)b;
 
     if(ta->val > tb->val)
         return 1;
@@ -27,35 +27,35 @@ int compare_data_selectSort(void *a,void *b){
         return -1;
 }
 
-void testSelectSort(
+void testMergeSort(
         Status (*sort_Func)(COMPARE_DATA,void **,int,void ***),
-        TestElement_SelectSort **unSortedDatas_0,
-        TestElement_SelectSort **unSortedDatas_1,
-        TestElement_SelectSort **unSortedDatas_2,
-        TestElement_SelectSort **unSortedDatas_3){
+        TestElement_MergeSort **unSortedDatas_0,
+        TestElement_MergeSort **unSortedDatas_1,
+        TestElement_MergeSort **unSortedDatas_2,
+        TestElement_MergeSort **unSortedDatas_3){
 
     //选择排序测试程序
     Status opResult=FAIL;
     int unSortedDatasLength=0;
 
     //对无需序列0进行排序
-    TestElement_SelectSort **sortedDatas_0_selectSort=NULL;
+    TestElement_MergeSort **sortedDatas_0_selectSort=NULL;
     unSortedDatasLength=0;
     opResult=sort_Func(
-        compare_data_selectSort,
-        (void **)unSortedDatas_0,
-        unSortedDatasLength,
-        (void ***)&sortedDatas_0_selectSort
+            compare_data_mergeSort,
+            (void **)unSortedDatas_0,
+            unSortedDatasLength,
+            (void ***)&sortedDatas_0_selectSort
     );
     printf("\n无序序列为\n");
     for(int i=0;i<unSortedDatasLength;i++)
-        print_data_selectSort(unSortedDatas_0[i]);
+        print_data_MergeSort(unSortedDatas_0[i]);
     if(opResult==FAIL){
         printf("\n排序失败\n");
     }else{
         printf("\n排序结果:\n");
         for(int i=0;i<unSortedDatasLength;i++){
-            print_data_selectSort(sortedDatas_0_selectSort[i]);
+            print_data_MergeSort(sortedDatas_0_selectSort[i]);
         }
         free(sortedDatas_0_selectSort);
     }
@@ -63,23 +63,23 @@ void testSelectSort(
     printf("\n---------------------------------0---------------------------------\n");
 
     //对无需序列1进行排序
-    TestElement_SelectSort **sortedDatas_1_selectSort=NULL;
+    TestElement_MergeSort **sortedDatas_1_selectSort=NULL;
     unSortedDatasLength=1;
     opResult=sort_Func(
-            compare_data_selectSort,
+            compare_data_mergeSort,
             (void **)unSortedDatas_1,
             unSortedDatasLength,
             (void ***)&sortedDatas_1_selectSort
     );
     printf("\n无序序列为\n");
     for(int i=0;i<unSortedDatasLength;i++)
-        print_data_selectSort(unSortedDatas_1[i]);
+        print_data_MergeSort(unSortedDatas_1[i]);
     if(opResult==FAIL){
         printf("\n排序失败\n");
     }else{
         printf("\n排序结果:\n");
         for(int i=0;i<unSortedDatasLength;i++){
-            print_data_selectSort(sortedDatas_1_selectSort[i]);
+            print_data_MergeSort(sortedDatas_1_selectSort[i]);
         }
         free(sortedDatas_1_selectSort);
     }
@@ -87,23 +87,23 @@ void testSelectSort(
     printf("\n---------------------------------1---------------------------------\n");
 
     //对无需序列2进行排序
-    TestElement_SelectSort **sortedDatas_2_selectSort=NULL;
+    TestElement_MergeSort **sortedDatas_2_selectSort=NULL;
     unSortedDatasLength=10;
     opResult=sort_Func(
-            compare_data_selectSort,
+            compare_data_mergeSort,
             (void **)unSortedDatas_2,
             unSortedDatasLength,
             (void ***)&sortedDatas_2_selectSort
     );
     printf("\n无序序列为\n");
     for(int i=0;i<unSortedDatasLength;i++)
-        print_data_selectSort(unSortedDatas_2[i]);
+        print_data_MergeSort(unSortedDatas_2[i]);
     if(opResult==FAIL){
         printf("\n排序失败\n");
     }else{
         printf("\n排序结果:\n");
         for(int i=0;i<unSortedDatasLength;i++){
-            print_data_selectSort(sortedDatas_2_selectSort[i]);
+            print_data_MergeSort(sortedDatas_2_selectSort[i]);
         }
         free(sortedDatas_2_selectSort);
     }
@@ -111,23 +111,23 @@ void testSelectSort(
     printf("\n---------------------------------2---------------------------------\n");
 
     //对无需序列2进行排序
-    TestElement_SelectSort **sortedDatas_3_selectSort=NULL;
+    TestElement_MergeSort **sortedDatas_3_selectSort=NULL;
     unSortedDatasLength=10;
     opResult=sort_Func(
-            compare_data_selectSort,
+            compare_data_mergeSort,
             (void **)unSortedDatas_3,
             unSortedDatasLength,
             (void ***)&sortedDatas_3_selectSort
     );
     printf("\n无序序列为\n");
     for(int i=0;i<unSortedDatasLength;i++)
-        print_data_selectSort(unSortedDatas_3[i]);
+        print_data_MergeSort(unSortedDatas_3[i]);
     if(opResult==FAIL){
         printf("\n排序失败\n");
     }else{
         printf("\n排序结果:\n");
         for(int i=0;i<unSortedDatasLength;i++){
-            print_data_selectSort(sortedDatas_3_selectSort[i]);
+            print_data_MergeSort(sortedDatas_3_selectSort[i]);
         }
         free(sortedDatas_3_selectSort);
     }
@@ -139,26 +139,26 @@ void testSelectSort(
 /*
  * 选择排序使用测试案例
  */
-void usingSelectSort(){
+void usingMergeSort(){
     //测试用 无序序列0
-    TestElement_SelectSort **unSortedDatas_0=NULL;
+    TestElement_MergeSort **unSortedDatas_0=NULL;
 
     //测试用 无序序列1
-    TestElement_SelectSort **unSortedDatas_1=(TestElement_SelectSort **)malloc(
-            sizeof(TestElement_SelectSort *)
-            );
-    unSortedDatas_1[0]=(TestElement_SelectSort *)malloc(
-            sizeof(TestElement_SelectSort)
-            );
+    TestElement_MergeSort **unSortedDatas_1=(TestElement_MergeSort **)malloc(
+            sizeof(TestElement_MergeSort *)
+    );
+    unSortedDatas_1[0]=(TestElement_MergeSort *)malloc(
+            sizeof(TestElement_MergeSort)
+    );
     unSortedDatas_1[0]->val=1;
 
     //测试用 无序序列2
-    TestElement_SelectSort **unSortedDatas_2=(TestElement_SelectSort **)malloc(
-            sizeof(TestElement_SelectSort *)*10
-            );
+    TestElement_MergeSort **unSortedDatas_2=(TestElement_MergeSort **)malloc(
+            sizeof(TestElement_MergeSort *)*10
+    );
     for(int i=0;i<10;i++)
-        unSortedDatas_2[i]=(TestElement_SelectSort *)malloc(
-                sizeof(TestElement_SelectSort));
+        unSortedDatas_2[i]=(TestElement_MergeSort *)malloc(
+                sizeof(TestElement_MergeSort));
     unSortedDatas_2[0]->val=10;
     unSortedDatas_2[1]->val=9;
     unSortedDatas_2[2]->val=15;
@@ -172,12 +172,12 @@ void usingSelectSort(){
 
 
     //测试用 无序序列3
-    TestElement_SelectSort **unSortedDatas_3=(TestElement_SelectSort **)malloc(
-            sizeof(TestElement_SelectSort *)*10
+    TestElement_MergeSort **unSortedDatas_3=(TestElement_MergeSort **)malloc(
+            sizeof(TestElement_MergeSort *)*10
     );
     for(int i=0;i<10;i++)
-        unSortedDatas_3[i]=(TestElement_SelectSort *)malloc(
-                sizeof(TestElement_SelectSort));
+        unSortedDatas_3[i]=(TestElement_MergeSort *)malloc(
+                sizeof(TestElement_MergeSort));
 
     unSortedDatas_3[0]->val=9;
     unSortedDatas_3[1]->val=8;
@@ -190,22 +190,14 @@ void usingSelectSort(){
     unSortedDatas_3[8]->val=1;
     unSortedDatas_3[9]->val=0;
 
-    //测试选择排序
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>选择排序测试--开始<<<<<<<<<<<<<<<<<<<<<<<<\n");
-    testSelectSort(directSelectSort,unSortedDatas_0,unSortedDatas_1,unSortedDatas_2,unSortedDatas_3);
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>选择排序测试--结束<<<<<<<<<<<<<<<<<<<<<<<<\n");
-
-    //测试堆排序
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>堆排序测试--开始<<<<<<<<<<<<<<<<<<<<<<<<\n");
-    testSelectSort(heapSelectSort,unSortedDatas_0,unSortedDatas_1,unSortedDatas_2,unSortedDatas_3);
-    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>堆排序测试--结束<<<<<<<<<<<<<<<<<<<<<<<<\n");
+    //测试归并排序
+    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>归并排序测试--开始<<<<<<<<<<<<<<<<<<<<<<<<\n");
+    testMergeSort(mergeSort,unSortedDatas_0,unSortedDatas_1,unSortedDatas_2,unSortedDatas_3);
+    printf("\n>>>>>>>>>>>>>>>>>>>>>>>>>>归并排序测试--结束<<<<<<<<<<<<<<<<<<<<<<<<\n");
 
 }
 
-//int main(){
-//    usingSelectSort();
-//    return 0;
-//}
-
-
-
+int main(){
+    usingMergeSort();
+    return 0;
+}
