@@ -197,7 +197,7 @@ void usingMergeSort(){
 
 }
 
-int main(){
-    usingMergeSort();
-    return 0;
-}
+//int main(){
+//    usingMergeSort();
+//    return 0;
+//}
