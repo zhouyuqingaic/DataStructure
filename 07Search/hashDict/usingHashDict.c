@@ -35,7 +35,7 @@ void using_HashDict(){
 
     char *val=NULL;
     for(int i=0;i<15;i++){
-        opResult= get_HashDict(hashDict,i,(void *)&val);
+        opResult= get_HashDict(hashDict,i,(void **)&val);
         if(FAIL==opResult){
             printf("获取key:%d的元素失败!\n",i);
         }else{
@@ -61,7 +61,7 @@ void using_HashDict(){
     }
 
     for(int i=0;i<11;i++){
-        opResult= get_HashDict(hashDict,i,(void *)&val);
+        opResult= get_HashDict(hashDict,i,(void **)&val);
         if(FAIL==opResult){
             printf("获取key:%d的元素失败!\n",i);
         }else{
@@ -85,7 +85,7 @@ void using_HashDict(){
     printf("\n\n>>>>>>>>>>>>>>删除key:3,key:0,key:5,key:9 后\n\n");
 
     for(int i=0;i<10;i++){
-        opResult= get_HashDict(hashDict,i,(void *)&val);
+        opResult= get_HashDict(hashDict,i,(void **)&val);
         if(FAIL==opResult){
             printf("获取key:%d的元素失败!\n",i);
         }else{
